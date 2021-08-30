@@ -343,7 +343,8 @@ void usbd_hid_callback_register(uint8_t intf_num,
                                 uint8_t (*get_idle_callback)(uint8_t reportid),
                                 uint8_t (*get_protocol_callback)(),
                                 void (*set_protocol_callback)(uint8_t protocal),
-                                void (*reset_callback)()
+                                void (*reset_callback)(),
+                                void (*configured_callback)()
 );
 #ifdef __cplusplus
 }

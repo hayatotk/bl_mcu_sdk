@@ -46,6 +46,7 @@ struct usbd_hid_cfg_private {
     void (*set_protocol_callback)(uint8_t protocal);
 
     void (*reset_callback)();
+    void (*configured_callback)();
 
     usb_slist_t list;
 } usbd_hid_cfg[4];
@@ -65,6 +66,18 @@ static void usbd_hid_reset(void)
             hid_intf->reset_callback();
     }
 }
+
+static void usbd_hid_configured(void)
+{
+    usb_slist_t *i;
+    usb_slist_for_each(i, &usbd_hid_class_head)
+    {
+        struct usbd_hid_cfg_private *hid_intf = usb_slist_entry(i, struct usbd_hid_cfg_private, list);
+        if(hid_intf->configured_callback)
+            hid_intf->configured_callback();
+    }
+}
+
 
 int hid_custom_request_handler(struct usb_setup_packet *setup, uint8_t **data, uint32_t *len)
 {
@@ -203,7 +216,9 @@ static void hid_notify_handler(uint8_t event, void *arg)
         case USB_EVENT_RESET:
             usbd_hid_reset();
             break;
-
+        case USB_EVENT_CONFIGURED:
+            usbd_hid_configured();
+            break;
         default:
             break;
     }
@@ -232,7 +247,8 @@ void usbd_hid_callback_register(uint8_t intf_num,
                                 uint8_t (*get_idle_callback)(uint8_t reportid),
                                 uint8_t (*get_protocol_callback)(),
                                 void (*set_protocol_callback)(uint8_t protocal),
-                                void (*reset_callback)()
+                                void (*reset_callback)(),
+                                void (*configured_callback)()
                                 )
 {
     usb_slist_t *i;
@@ -248,6 +264,7 @@ void usbd_hid_callback_register(uint8_t intf_num,
             hid_intf->get_protocol_callback=get_protocol_callback;
             hid_intf->set_protocol_callback=set_protocol_callback;
             hid_intf->reset_callback=reset_callback;
+            hid_intf->configured_callback=configured_callback;
             return;
         }
     }
@@ -294,6 +311,7 @@ void usbd_hid_add_interface(usbd_class_t *class, usbd_interface_t *intf)
 
 
     usbd_hid_cfg[hid_num].reset_callback=NULL;
+    usbd_hid_cfg[hid_num].configured_callback=NULL;
 
     usb_slist_add_tail(&usbd_hid_class_head, &usbd_hid_cfg[hid_num].list);
     hid_num++;
