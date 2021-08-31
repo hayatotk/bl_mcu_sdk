@@ -126,16 +126,20 @@
 #define WBVAL(x) (x & 0xFF), ((x >> 8) & 0xFF)
 #define DBVAL(x) (x & 0xFF), ((x >> 8) & 0xFF), ((x >> 16) & 0xFF), ((x >> 24) & 0xFF)
 
-#if 1
-#define USBD_LOG_WRN(a, ...) bflb_platform_printf(a, ##__VA_ARGS__)
+#ifndef EN_USB_DEBUG
+#define EN_USB_DEBUG 0
+#endif
+
+#if EN_USB_DEBUG
+#define USBD_LOG(a, ...)     bflb_platform_printf(a, ##__VA_ARGS__)
 #define USBD_LOG_DBG(a, ...) bflb_platform_printf(a, ##__VA_ARGS__)
-#define USBD_LOG_ERR(a, ...) bflb_platform_printf(a, ##__VA_ARGS__)
-#define USBD_LOG(a, ...)     bflb_platform_printf(a, ##__VA_ARGS__)
-#else
 #define USBD_LOG_WRN(a, ...) bflb_platform_printf(a, ##__VA_ARGS__)
-#define USBD_LOG_DBG(a, ...)
 #define USBD_LOG_ERR(a, ...) bflb_platform_printf(a, ##__VA_ARGS__)
-#define USBD_LOG(a, ...)     bflb_platform_printf(a, ##__VA_ARGS__)
+#else
+#define USBD_LOG_WRN(a, ...)
+#define USBD_LOG_DBG(a, ...)
+#define USBD_LOG_ERR(a, ...)
+#define USBD_LOG(a, ...)
 #endif
 
 #endif
