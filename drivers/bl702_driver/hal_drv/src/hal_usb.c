@@ -930,7 +930,6 @@ void usb_dc_isr(usb_dc_device_t *device)
             epnum = (epint - USB_INT_EP0_OUT_CMD) >> 1;
             if (!USB_Is_EPx_RDY_Free(epnum) && (device->out_ep[epnum].ep_cfg.ep_type != USBD_EP_TYPE_ISOC)) {
                 USB_DC_LOG_ERR("ep%d out busy\r\n", epnum);
-                USB_Clr_IntStatus(epint);
                 return;
             }
             device->parent.callback(&device->parent, (void *)((uint32_t)USB_SET_EP_OUT(epnum)), 0, USB_DC_EVENT_EP_OUT_NOTIFY);
@@ -945,7 +944,6 @@ void usb_dc_isr(usb_dc_device_t *device)
             epnum = (epint - USB_INT_EP0_OUT_CMD) >> 1;
             if (!USB_Is_EPx_RDY_Free(epnum)) {
                 USB_DC_LOG_DBG("ep%d in busy\r\n", epnum);
-                USB_Clr_IntStatus(epint);
                 return;
             }
             device->parent.callback(&device->parent, (void *)((uint32_t)USB_SET_EP_IN(epnum)), 0, USB_DC_EVENT_EP_IN_NOTIFY);
