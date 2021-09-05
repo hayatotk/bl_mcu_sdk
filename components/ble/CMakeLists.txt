@@ -94,10 +94,6 @@ list(APPEND ADD_SRCS  "${CMAKE_CURRENT_SOURCE_DIR}/ble_stack/services/scps.c")
 endif()
 
 if(CONFIG_BT_DIS_SERVER)
-list(APPEND ADD_SRCS  "${CMAKE_CURRENT_SOURCE_DIR}/ble_stack/services/bas.c")
-endif()
-
-if(CONFIG_BT_BAS_SERVER)
 list(APPEND ADD_SRCS  "${CMAKE_CURRENT_SOURCE_DIR}/ble_stack/services/dis.c")
 endif()
 
