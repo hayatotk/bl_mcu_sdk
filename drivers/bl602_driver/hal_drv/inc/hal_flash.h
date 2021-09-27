@@ -23,8 +23,7 @@
 #ifndef __HAL_FLASH__H__
 #define __HAL_FLASH__H__
 
-#include "drv_device.h"
-
+#include "hal_common.h"
 
 #define BL_FLASH_XIP_BASE BL602_FLASH_XIP_BASE
 #define FLASH_NOT_DETECT  0x10
@@ -36,6 +35,6 @@ BL_Err_Type flash_read(uint32_t addr, uint8_t *data, uint32_t len);
 BL_Err_Type flash_write(uint32_t addr, uint8_t *data, uint32_t len);
 BL_Err_Type flash_erase(uint32_t startaddr, uint32_t len);
 BL_Err_Type flash_set_cache(uint8_t cont_read, uint8_t cache_enable, uint8_t cache_way_disable, uint32_t flash_offset);
-BL_Err_Type flash_get_cfg(uint8_t **cfg_addr,uint32_t *len);
+BL_Err_Type flash_get_cfg(uint8_t **cfg_addr, uint32_t *len);
 
 #endif

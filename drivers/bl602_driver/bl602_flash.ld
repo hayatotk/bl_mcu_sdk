@@ -40,24 +40,32 @@ SECTIONS
         KEEP (*(.text.metal.init.enter))
         KEEP (*(SORT_NONE(.init)))
 
-        /* section information for finsh shell */
+        /* section information for shell */
         . = ALIGN(4);
-        _shell_command_start = .;
-        KEEP(*(shellCommand))
-        _shell_command_end = .;
+        __fsymtab_start = .;
+        KEEP(*(FSymTab))
+        __fsymtab_end = .;
+
+        . = ALIGN(4);
+        __vsymtab_start = .;
+        KEEP(*(VSymTab))
+        __vsymtab_end = .;
 
         *(.text)
         *(.text.*)
 
         /*put .rodata**/
-        *(EXCLUDE_FILE( *bl602_glb.o \
-                        *bl602_pds.o \
-                        *bl602_common.o \
-                        *bl602_sf_cfg.o \
-                        *bl602_sf_ctrl.o \
-                        *bl602_sflash.o \
-                        *bl602_xip_sflash.o \
-                        *bl602_ef_ctrl.o) .rodata*)
+        *(EXCLUDE_FILE( *bl602_glb*.o* \
+                        *bl602_pds*.o* \
+                        *bl602_common*.o* \
+                        *bl602_sf_cfg*.o* \
+                        *bl602_sf_cfg_ext*.o* \
+                        *bl602_sf_ctrl*.o* \
+                        *bl602_sflash*.o* \
+                        *bl602_sflash_ext*.o* \
+                        *bl602_xip_sflash*.o* \
+                        *bl602_xip_sflash_ext*.o* \
+                        *bl602_ef_ctrl*.o*) .rodata*)
         *(.rodata)
         *(.rodata.*)
 
@@ -77,19 +85,22 @@ SECTIONS
         . = ALIGN(4);
         __tcm_code_start__ = .;
 
-        *(.tcm_code)
-        *(.tcm_const)
-        *(.sclock_rlt_code)
-        *(.sclock_rlt_const)
+        *(.tcm_code.*)
+        *(.tcm_const.*)
+        *(.sclock_rlt_code.*)
+        *(.sclock_rlt_const.*)
 
-        *bl602_glb.o*(.rodata*)
-        *bl602_pds.o*(.rodata*)
-        *bl602_common.o*(.rodata*)
-        *bl602_sf_cfg.o*(.rodata*)
-        *bl602_sf_ctrl.o*(.rodata*)
-        *bl602_sflash.o*(.rodata*)
-        *bl602_xip_sflash.o*(.rodata*)
-        *bl602_ef_ctrl.o*(.rodata*)
+        *bl602_glb*.o*(.rodata*)
+        *bl602_pds*.o*(.rodata*)
+        *bl602_common*.o*(.rodata*)
+        *bl602_sf_cfg*.o*(.rodata*)
+        *bl602_sf_cfg_ext*.o*(.rodata*)
+        *bl602_sf_ctrl*.o*(.rodata*)
+        *bl602_sflash*.o*(.rodata*)
+        *bl602_sflash_ext*.o*(.rodata*)
+        *bl602_xip_sflash*.o*(.rodata*)
+        *bl602_xip_sflash_ext*.o*(.rodata*)
+        *bl602_ef_ctrl*.o*(.rodata*)
 
         . = ALIGN(4);
         __tcm_code_end__ = .;
