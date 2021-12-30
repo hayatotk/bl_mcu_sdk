@@ -37,6 +37,10 @@ struct k_work {
 
 #define K_WORK_INITIALIZER __DEPRECATED_MACRO _K_WORK_INITIALIZER
 
+
+#define K_WORK_DEFINE(work, work_handler) \
+	struct k_work work = K_WORK_INITIALIZER(work_handler)
+
 int k_work_init(struct k_work *work, k_work_handler_t handler);
 void k_work_submit(struct k_work *work);
 
