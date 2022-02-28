@@ -23,12 +23,11 @@
 #ifndef __HAL_COMMON__H__
 #define __HAL_COMMON__H__
 
-#include "drv_device.h"
 #include "bl602_common.h"
-#include "bl602_config.h"
 
 void cpu_global_irq_enable(void);
 void cpu_global_irq_disable(void);
+void hal_por_reset(void);
 void hal_system_reset(void);
 void hal_cpu_reset(void);
 void hal_get_chip_id(uint8_t chip_id[8]);

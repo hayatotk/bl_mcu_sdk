@@ -27,33 +27,31 @@ endif
 #option config to use
 SUPPORT_FLOAT?=n
 SUPPORT_ROMAPI?=y
+SUPPORT_HALAPI?=y
 SUPPORT_USB_HS?=n
 SUPPORT_HW_SEC_ENG_DISABLE?=n
 SUPPORT_BLECONTROLLER_LIB?=
 
 #cmake definition config
-ifneq ($(CPU_ID),none)
-cmake_definition+= -DCPU_ID=$(CPU_ID)
-endif
-
 cmake_definition+= -DCHIP=$(CHIP)
+cmake_definition+= -DCPU_ID=$(CPU_ID)
 cmake_definition+= -DBOARD=$(BOARD)
 cmake_definition+= -DAPP_DIR=$(APP_DIR)
 cmake_definition+= -DAPP=$(APP)
 cmake_definition+= -DBOOTROM=$(BOOTROM)
-cmake_definition+= -DSUPPORT_ROMAPI=$(SUPPORT_ROMAPI)
+cmake_definition+= -DCONFIG_ROMAPI=$(SUPPORT_ROMAPI)
+cmake_definition+= -DCONFIG_HALAPI=$(SUPPORT_HALAPI)
 cmake_definition+= -DCONFIG_PRINT_FLOAT=$(SUPPORT_FLOAT)
 cmake_definition+= -DCONFIG_USB_HS=$(SUPPORT_USB_HS)
 cmake_definition+= -DCONFIG_HW_SEC_ENG_DISABLE=$(SUPPORT_HW_SEC_ENG_DISABLE)
 cmake_definition+= -DCONFIG_BLECONTROLLER_LIB=$(SUPPORT_BLECONTROLLER_LIB)
 
 build:Makefile
-	cmake -E make_directory build
-	cd build && cmake -G "Unix Makefiles" $(cmake_definition) ..
+	cmake -S . -B build -G "Unix Makefiles" $(cmake_definition)
 	cd build && make -j4
 
 help:
-	@echo "Welcome to MCU SDK camke build system,commands are as follows:"
+	@echo "Welcome to MCU SDK cmake build system,commands are as follows:"
 	@echo ""
 	@echo "make clean - Remove all cmake caches and output files"
 	@echo "make SUPPORT_FLOAT=y - Enable float print"

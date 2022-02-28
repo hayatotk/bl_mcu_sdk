@@ -54,6 +54,7 @@ BL MCU SDK 将为您提供博流 BL70X 系列 MCU 开发的全方位支持。
    samples/basic samples/i2s/index
    samples/basic samples/adc/index
    samples/basic samples/timer/index
+   samples/basic samples/flash/index
 
 
 .. toctree::
@@ -67,5 +68,6 @@ BL MCU SDK 将为您提供博流 BL70X 系列 MCU 开发的全方位支持。
    samples/advance samples/lowpower_demo
    samples/advance samples/boot2_iap_info
    samples/advance samples/ble_scan_demo
+   samples/advance samples/ble_pds
    samples/advance samples/emac/index
 

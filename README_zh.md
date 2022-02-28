@@ -14,42 +14,79 @@
 bl_mcu_sdk
 ├── bsp
 │   ├── board
-│   │   ├── bl706_avb
-│   │   ├── bl706_iot
-│   │   └── bl602_xxx
+│   │   ├── bl602
+│   │   └── bl702
 │   └── bsp_common
+├── build
 ├── common
+│   ├── bl_math
 │   ├── device
 │   ├── list
 │   ├── memheap
 │   ├── misc
 │   ├── partition
+│   ├── pid
 │   ├── ring_buffer
-│   └── soft_crc
+│   ├── soft_crc
+│   └── timestamp
 ├── components
 │   ├── ble
 │   ├── fatfs
 │   ├── freertos
+│   ├── lvgl
+│   ├── lwip
+│   ├── mbedtls
+│   ├── nmsis
+│   ├── romfs
+│   ├── rt-thread
 │   ├── shell
-│   └── usb_stack
+│   ├── tflite
+│   ├── tiny_jpeg
+│   ├── usb_stack
+│   └── xz
 ├── docs
-│   ├── bl70x_docs
+│   ├── chipSpecification
 │   ├── development_guide
+│   └── development_guide_en
 ├── drivers
 │   ├── bl602_driver
 │   └── bl702_driver
 ├── examples
+│   ├── acomp
 │   ├── adc
-│   ├── audio
+│   ├── audio_cube
+│   ├── ble
+│   ├── boot2_iap
 │   ├── camera
+│   ├── coremark
+│   ├── cxx
 │   ├── dac
 │   ├── dma
+│   ├── dsp
+│   ├── emac
+│   ├── flash
+│   ├── freertos
 │   ├── gpio
 │   ├── hellowd
 │   ├── i2c
 │   ├── i2s
+│   ├── keyscan
+│   ├── lvgl
+│   ├── mbedtls
 │   ├── memheap
+│   ├── nn
+│   ├── pka
+│   ├── pm
+│   ├── psram
+│   ├── pwm
+│   ├── qdec
+│   ├── rt-thread
+│   ├── rtc
+│   ├── shell
 │   ├── spi
+│   ├── systick
+│   ├── tensorflow
+│   ├── timer
 │   ├── uart
 │   └── usb
 ├── out
@@ -61,17 +98,17 @@ bl_mcu_sdk
 
 ```
 
-- bsp/bsp_common : 存放一些板级相关的常用外设驱动代码
-- bsp/board : 存放板级描述文件 `clock_config.h`(描述时钟配置文件) `pinmux_config.h`(描述io功能文件) `peripheral_config.h` (描述外设默认配置文件) 这几个文件共同形成 board 文件夹描述特定应用的所有硬件信息。
-- common : 存放一些常见的与硬件无关的算法函数库
-- components : 存放第三方库公共组件库
-- drivers : 存放博流智能提供的公共芯片底层驱动库
-- examples : 存放官方提供的示例代码
-- out : 中间文件，用来存放编译链接后的产生的bin文件
-- tools : 存放编译下载相关的工具包
-- docs : 存放教程文档以及其他帮助信息
+- **bsp/board** : 存放板级描述文件 `clock_config.h`(描述时钟配置文件) `pinmux_config.h`(描述io功能文件) `peripheral_config.h` (描述外设默认配置文件) 这几个文件共同形成 board 文件夹描述特定应用的所有硬件信息。
+- **bsp/bsp_common** : 存放一些板级相关的常用外设驱动代码
+- **common** : 存放一些常用的函数和宏（芯片驱动需要）
+- **components** : 存放第三方库公共组件
+- **drivers** : 存放博流智能系列芯片驱动
+- **examples** : 存放官方提供的示例代码
+- **tools** : 存放编译下载相关的工具包
+- **docs** : 存放教程文档以及其他帮助信息
+- **build**: 存放 cmake 缓存文件
+- **out** : 中间文件，用来存放编译链接后的产生的bin文件
 
-更多文件目录参考信息，请查阅 [bl mcu sdk 文档教程](http://bouffalolab.gitee.io/bl_mcu_sdk)
 ## 层次结构
 
 [![层次结构](https://z3.ax1x.com/2021/06/18/RpUVoj.png)](https://imgtu.com/i/RpUVoj)
@@ -84,10 +121,11 @@ bl_mcu_sdk
 [![BL706_IOT](https://z3.ax1x.com/2021/08/06/fnPcLT.png)](https://imgtu.com/i/fnPcLT)
 
 - BL706 AVB 开发板
-[![BL706_AVB](https://z3.ax1x.com/2021/06/18/Rpa7DO.jpg)](https://imgtu.com/i/Rpa7DO)
+[![BL706_AVB](https://z3.ax1x.com/2021/11/16/IWPuVJ.png)](https://imgtu.com/i/IWPuVJ)
 
 
-目前暂时没有提供官方的购买渠道，如果想获得上述开发板，可到任意开源社区留言申请。
+目前暂时没有提供官方的购买渠道，如果想获得上述开发板，可到[论坛申请贴](https://bbs.bouffalolab.com/d/88)申请。
+
 ## 芯片手册
 
 [芯片参考手册](https://dev.bouffalolab.com/media/upload/doc/BL702_BL704_706_RM_zh_CN_1.1.pdf)|[芯片数据手册](https://dev.bouffalolab.com/media/upload/doc/BL702_BL704_BL706_DS_zh_CN_Combo_2.0.pdf)
@@ -96,9 +134,9 @@ bl_mcu_sdk
 
 ## 文档教程
 
-包含 bl mcu sdk 开发的快速入门教程， api 手册以及驱动框架等详细介绍
+获取更多 bl mcu sdk 开发相关的教程，如 api 手册、外设 demo 等，请参考：
 
-- [bl mcu sdk 文档教程](http://bouffalolab.gitee.io/bl_mcu_sdk)
+- [bl mcu sdk 文档教程](https://dev.bouffalolab.com/media/doc/sdk/bl_mcu_sdk_zh/index.html)
 
 ## 视频教程
 
@@ -108,7 +146,7 @@ bl_mcu_sdk
 
 ### 命令行开发
 
-命令行开发需要的工具，具体使用方法参考 [linux 开发指南](http://bouffalolab.gitee.io/bl_mcu_sdk/get_started/Linux_quick_start_ubuntu.html)
+命令行开发需要的工具，具体使用方法参考 [linux 开发指南](https://dev.bouffalolab.com/media/doc/sdk/bl_mcu_sdk_zh/get_started/Linux_quick_start_ubuntu.html)
 
 - [cmake 3.19](https://cmake.org/files/v3.19/)， cmake 编译工具，建议使用 cmake v3.15 以上版本
 - [riscv64-unknown-elf-gcc](https://gitee.com/bouffalolab/toolchain_gcc_sifive_linux), risc-v linux 端工具链，下载方式：
@@ -121,7 +159,7 @@ git clone https://gitee.com/bouffalolab/toolchain_gcc_sifive_linux.git
 
 ### Eclipse开发
 
-Eclipse 开发需要的工具，具体使用方法参考 [Eclipse 开发指南](http://bouffalolab.gitee.io/bl_mcu_sdk/get_started/Windows_quick_start_eclipse.html)
+Eclipse 开发需要的工具，具体使用方法参考 [Eclipse 开发指南](https://dev.bouffalolab.com/media/doc/sdk/bl_mcu_sdk_zh/get_started/Windows_quick_start_eclipse.html)
 
 - [Eclipse](https://dev.bouffalolab.com/media/upload/download/BouffaloLab_eclipse_x86_64_win.zip) Windows 下 eclipse 开发免安装包
 - [riscv64-unknown-elf-gcc](https://gitee.com/bouffalolab/toolchain_gcc_sifive_windows), risc-v windows 端工具链，下载方式：
@@ -136,7 +174,7 @@ git clone https://gitee.com/bouffalolab/toolchain_gcc_sifive_windows.git
 
 ### CDK开发
 
-CDK 开发需要的工具，具体使用方法参考 [CDK 开发指南](http://bouffalolab.gitee.io/bl_mcu_sdk/get_started/Windows_quick_start_cdk.html)
+CDK 开发需要的工具，具体使用方法参考 [CDK 开发指南](https://dev.bouffalolab.com/media/doc/sdk/bl_mcu_sdk_zh/get_started/Windows_quick_start_cdk.html)
 
 - [CDK](https://occ.t-head.cn/development/activities/cdk)，平头哥剑池 CDK 集成开发环境，建议使用 CDK v2.8.4 以上版本
 
@@ -147,6 +185,10 @@ CDK 开发需要的工具，具体使用方法参考 [CDK 开发指南](http://b
 
 - [Bouffalo Lab Dev Cube For Windows](https://dev.bouffalolab.com/media/upload/download/BouffaloLabDevCube-1.5.3-win32.zip)
 - [Bouffalo Lab Dev Cube For Ubuntu](https://dev.bouffalolab.com/media/upload/download/BouffaloLabDevCube-1.5.3-linux-x86.tar.gz)
+
+### Board Config Wizard
+
+我们提供了[BL Config Wizard](https://dev.bouffalolab.com/media/config/index.html)，可以在线生成  `clock_config.h`、 `pinmux_config.h` 和 `peripheral_config.h` 文件。
 
 ## 如何将 SDK 作为 submodule 使用
 

@@ -28,6 +28,8 @@ extern "C" {
 #endif
 
 #include "hal_common.h"
+#include "drv_device.h"
+#include "bl702_config.h"
 
 #define DEVICE_CTRL_ADC_CHANNEL_START  0x10
 #define DEVICE_CTRL_ADC_CHANNEL_STOP   0x11
@@ -97,7 +99,7 @@ typedef enum {
 typedef enum {
     ADC_DATA_WIDTH_12B,                  /*!< ADC 12 bits */
     ADC_DATA_WIDTH_14B_WITH_16_AVERAGE,  /*!< ADC 14 bits,and the value is average of 16 converts */
-    ADC_DATA_WIDTH_16B_WITH_64_AVERAGE,  /*!< ADC 16 bits,and the value is average of 64 converts */
+    ADC_DATA_WIDTH_14B_WITH_64_AVERAGE,  /*!< ADC 14 bits,and the value is average of 64 converts */
     ADC_DATA_WIDTH_16B_WITH_128_AVERAGE, /*!< ADC 16 bits,and the value is average of 128 converts */
     ADC_DATA_WIDTH_16B_WITH_256_AVERAGE, /*!< ADC 16 bits,and the value is average of 256 converts */
 } adc_data_width_t;
@@ -138,15 +140,13 @@ enum adc_it_type {
     ADC_FIFO_IT = 1 << 5,
 };
 
-typedef struct
-{
+typedef struct {
     uint8_t *pos_channel;
     uint8_t *neg_channel;
     uint8_t num;
 } adc_channel_cfg_t;
 
-typedef struct
-{
+typedef struct {
     int8_t posChan; /*!< Positive channel */
     int8_t negChan; /*!< Negative channel */
     uint16_t value; /*!< ADC value */
@@ -162,6 +162,7 @@ typedef struct adc_device {
     adc_data_width_t data_width;
     adc_fifo_threshold_t fifo_threshold;
     adc_pga_gain_t gain;
+    void* rx_dma;
 } adc_device_t;
 
 #define ADC_DEV(dev) ((adc_device_t *)dev)
