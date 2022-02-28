@@ -23,6 +23,8 @@
 
 #include "bl702_romdriver.h"
 #include "bl702_sf_ctrl.h"
+#include "bl702_glb.h"
+#include "hal_clock.h"
 #include "hal_pm.h"
 #include "hal_pm_util.h"
 
@@ -35,12 +37,13 @@ extern uint32_t psramIoCfg;
 /* Flash offset value, will get from sf_ctrl register */
 extern uint32_t flash_offset;
 
+extern void pm_pds31_fast_mode_enter(enum pm_pds_sleep_level pds_level, uint32_t sleep_time);
+
 extern SPI_Flash_Cfg_Type *flash_cfg;
 
 void ATTR_PDS_RAM_SECTION pm_pds_fastboot_entry(void);
 
-void (*tcm_recovery)(void) = NULL;
-void (*board_recovery)(void) = NULL;
+void (*hardware_recovery)(void) = NULL;
 
 /**
  * @brief hal_pds_enter_with_time_compensation
@@ -58,12 +61,11 @@ uint32_t hal_pds_enter_with_time_compensation(uint32_t pdsLevel, uint32_t pdsSle
     uint32_t actualSleepDuration_32768cycles = 0;
     uint32_t actualSleepDuration_ms = 0;
 
-    if (pdsLevel >= 4 && HBN_Get_Status_Flag() != HBN_STATUS_ENTER_FLAG) {
-        pm_set_wakeup_callback(pm_pds_fastboot_entry);
-    }
+    pm_set_wakeup_callback(pm_pds_fastboot_entry);
+
     HBN_Get_RTC_Timer_Val(&rtcLowBeforeSleep, &rtcHighBeforeSleep);
 
-    pm_pds_mode_enter(pdsLevel, pdsSleepCycles);
+    pm_pds31_fast_mode_enter(pdsLevel, pdsSleepCycles);
 
     HBN_Get_RTC_Timer_Val(&rtcLowAfterSleep, &rtcHighAfterSleep);
 
@@ -150,7 +152,8 @@ int32_t ATTR_PDS_RAM_SECTION pm_spi_flash_init(uint8_t media_boot)
     uint32_t flash_read_try = 0;
 
     /*use fclk as flash clok */
-    RomDriver_GLB_Set_SF_CLK(1, GLB_SFLASH_CLK_BCLK, 0); // 32M
+    RomDriver_GLB_Set_SF_CLK(1, GLB_SFLASH_CLK_XCLK, 0); // 32M
+    RomDriver_SF_Ctrl_Set_Clock_Delay(0);
 
     bflb_spi_flash_set_sf_ctrl(flash_cfg);
 
@@ -253,7 +256,36 @@ static void ATTR_PDS_RAM_SECTION pm_pds_restore_cpu_reg(void)
         "csrw   mstatus,a1\n\t"
         "ret\n\t");
 }
+void ATTR_PDS_RAM_SECTION sf_io_select(void)
+{
+    uint32_t tmpVal = 0;
+    uint8_t flashCfg = 0;
+    uint8_t psramCfg = 0;
+    uint8_t isInternalFlash = 0;
+    uint8_t isInternalPsram = 0;
 
+    /* SF io select from efuse value */
+    tmpVal = BL_RD_WORD(0x40007074);
+    flashCfg = ((tmpVal >> 26) & 7);
+    psramCfg = ((tmpVal >> 24) & 3);
+    if (flashCfg == 1 || flashCfg == 2) {
+        isInternalFlash = 1;
+    } else {
+        isInternalFlash = 0;
+    }
+    if (psramCfg == 1) {
+        isInternalPsram = 1;
+    } else {
+        isInternalPsram = 0;
+    }
+    tmpVal = BL_RD_REG(GLB_BASE, GLB_GPIO_USE_PSRAM__IO);
+    if (isInternalFlash == 1 && isInternalPsram == 0) {
+        tmpVal = BL_SET_REG_BITS_VAL(tmpVal, GLB_CFG_GPIO_USE_PSRAM_IO, 0x3f);
+    } else {
+        tmpVal = BL_SET_REG_BITS_VAL(tmpVal, GLB_CFG_GPIO_USE_PSRAM_IO, 0x00);
+    }
+    BL_WR_REG(GLB_BASE, GLB_GPIO_USE_PSRAM__IO, tmpVal);
+}
 // must be placed in pds section
 void ATTR_PDS_RAM_SECTION pm_pds_fastboot_entry(void)
 {
@@ -264,28 +296,26 @@ void ATTR_PDS_RAM_SECTION pm_pds_fastboot_entry(void)
         "la gp, __global_pointer$\n\t"
         ".option pop\n\t");
 
+#if XTAL_TYPE != INTERNAL_RC_32M
+    /* power on Xtal_32M*/
+    (*(volatile uint32_t *)(AON_BASE + AON_RF_TOP_AON_OFFSET)) |= (3 << 4);
+#endif
+
     // recovery flash pad and param
     RomDriver_SF_Cfg_Init_Flash_Gpio(0, 1);
     pm_spi_flash_init(1);
+    sf_io_select();
 
-    // Restore tcm code
-    if (tcm_recovery)
-        tcm_recovery();
-
-    // Recovery gpio and clock
-    if (board_recovery)
-        board_recovery();
+    /* Recovery hardware , include tcm , gpio and clock */
+    if (hardware_recovery) {
+        hardware_recovery();
+    }
 
     // Restore cpu registers
     pm_pds_restore_cpu_reg();
 }
 
-void pm_set_tcm_recovery_callback(void (*tcm_recovery_cb)(void))
+void pm_set_hardware_recovery_callback(void (*hardware_recovery_cb)(void))
 {
-    tcm_recovery = tcm_recovery_cb;
-}
-
-void pm_set_board_recovery_callback(void (*board_recovery_cb)(void))
-{
-    board_recovery = board_recovery_cb;
+    hardware_recovery = hardware_recovery_cb;
 }

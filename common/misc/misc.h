@@ -40,6 +40,13 @@
 #endif
 
 /**
+ * @brief Null Type definition
+ */
+#ifndef NULL
+#define NULL 0
+#endif
+
+/**
  * @brief Error type definition
  */
 typedef enum {
@@ -96,39 +103,19 @@ typedef enum {
 typedef void(intCallback_Type)(void);
 typedef void (*pFunc)(void);
 
-/**
- * @brief Null Type definition
- */
-#ifndef NULL
-#define NULL 0
-#endif
-
-#define BL602_MemCpy      arch_memcpy
-#define BL602_MemSet      arch_memset
-#define BL602_MemCmp      arch_memcmp
-#define BL602_MemCpy4     arch_memcpy4
-#define BL602_MemCpy_Fast arch_memcpy_fast
-#define BL602_MemSet4     arch_memset4
-
-#define BL702_MemCpy      arch_memcpy
-#define BL702_MemSet      arch_memset
-#define BL702_MemCmp      arch_memcmp
-#define BL702_MemCpy4     arch_memcpy4
-#define BL702_MemCpy_Fast arch_memcpy_fast
-#define BL702_MemSet4     arch_memset4
-
 #define ARCH_MemCpy      arch_memcpy
 #define ARCH_MemSet      arch_memset
 #define ARCH_MemCmp      arch_memcmp
 #define ARCH_MemCpy4     arch_memcpy4
 #define ARCH_MemCpy_Fast arch_memcpy_fast
 #define ARCH_MemSet4     arch_memset4
-/**
- * @brief Null Type definition
- */
-#ifndef NULL
-#define NULL 0
-#endif
+
+#ifdef DEBUG
+void check_failed(uint8_t *file, uint32_t line);
+#define CHECK_PARAM(expr) ((expr) ? (void)0 : check_failed((uint8_t *)__FILE__, __LINE__))
+#else
+#define CHECK_PARAM(expr) ((void)0)
+#endif /* DEBUG */
 
 void *arch_memcpy(void *dst, const void *src, uint32_t n);
 void *arch_memset(void *s, uint8_t c, uint32_t n);
@@ -138,4 +125,7 @@ void *arch_memcpy_fast(void *pdst, const void *psrc, uint32_t n);
 uint32_t *arch_memset4(uint32_t *dst, const uint32_t val, uint32_t n);
 void memcopy_to_fifo(void *fifo_addr, uint8_t *data, uint32_t length);
 void fifocopy_to_mem(void *fifo_addr, uint8_t *data, uint32_t length);
+int arch_ctzll(uint64_t *val, uint32_t *bit);
+int arch_clzll(uint64_t *val, uint32_t *bit);
+int arch_ffsll(uint64_t *val, uint32_t *bit);
 #endif

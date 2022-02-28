@@ -35,7 +35,6 @@
  */
 #include "hal_uart.h"
 #include "hal_dma.h"
-#include "hal_gpio.h"
 #include "hal_clock.h"
 #include "bl602_uart.h"
 #include "bl602_glb.h"
@@ -269,6 +268,7 @@ int uart_control(struct device *dev, int cmd, void *args)
  */
 int uart_write(struct device *dev, uint32_t pos, const void *buffer, uint32_t size)
 {
+    int ret = -1;
     uart_device_t *uart_device = (uart_device_t *)dev;
 
     if (dev->oflag & DEVICE_OFLAG_DMA_TX) {
@@ -279,14 +279,13 @@ int uart_write(struct device *dev, uint32_t pos, const void *buffer, uint32_t si
         }
 
         if (uart_device->id == 0) {
-            dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_UART0_TDR, size);
+            ret = dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_UART0_TDR, size);
             dma_channel_start(dma_ch);
         } else if (uart_device->id == 1) {
-            dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_UART1_TDR, size);
+            ret = dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_UART1_TDR, size);
             dma_channel_start(dma_ch);
         }
-
-        return 0;
+        return ret;
     } else if (dev->oflag & DEVICE_OFLAG_INT_TX) {
         return -2;
     } else
@@ -386,14 +385,14 @@ void uart_isr(uart_device_t *handle)
     /* Rx fifo ready interrupt,auto-cleared when data is popped */
     if (BL_IS_REG_BIT_SET(tmpVal, UART_URX_FIFO_INT) && !BL_IS_REG_BIT_SET(maskVal, UART_CR_URX_FIFO_MASK)) {
         uint8_t buffer[UART_FIFO_MAX_LEN];
-        len = UART_ReceiveData(handle->id, buffer, handle->fifo_threshold);
+        len = UART_ReceiveData(handle->id, buffer, UART_FIFO_MAX_LEN);
         handle->parent.callback(&handle->parent, &buffer[0], len, UART_EVENT_RX_FIFO);
     }
 
     /* Rx time-out interrupt */
     if (BL_IS_REG_BIT_SET(tmpVal, UART_URX_RTO_INT) && !BL_IS_REG_BIT_SET(maskVal, UART_CR_URX_RTO_MASK)) {
         uint8_t buffer[UART_FIFO_MAX_LEN];
-        len = UART_ReceiveData(handle->id, buffer, handle->fifo_threshold);
+        len = UART_ReceiveData(handle->id, buffer, UART_FIFO_MAX_LEN);
         handle->parent.callback(&handle->parent, &buffer[0], len, UART_EVENT_RTO);
         BL_WR_REG(UARTx, UART_INT_CLEAR, 0x10);
     }

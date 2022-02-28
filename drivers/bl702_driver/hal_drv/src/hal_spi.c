@@ -22,10 +22,8 @@
  */
 #include "hal_spi.h"
 #include "hal_dma.h"
-#include "hal_gpio.h"
 #include "bl702_glb.h"
 #include "bl702_spi.h"
-#include "spi_config.h"
 
 #ifdef BSP_USING_SPI0
 static void SPI0_IRQ(void);
@@ -48,18 +46,19 @@ int spi_open(struct device *dev, uint16_t oflag)
     spi_device_t *spi_device = (spi_device_t *)dev;
     SPI_CFG_Type spiCfg = { 0 };
     SPI_FifoCfg_Type fifoCfg = { 0 };
-#if SPI_SWAP_ENABLE
-    GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
-#endif
 
-    SPI_IntMask(spi_device->id, SPI_INT_ALL, MASK);
+    if (spi_device->pin_swap_enable) {
+        GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
+    }
+
     /* Enable uart interrupt*/
     CPU_Interrupt_Disable(SPI_IRQn);
+    SPI_IntMask(spi_device->id, SPI_INT_ALL, MASK);
 
     SPI_Disable(spi_device->id, spi_device->mode);
 
     GLB_Set_SPI_0_ACT_MOD_Sel(spi_device->mode);
-    GLB_Set_SPI_CLK(ENABLE, 0);
+
     /* Set SPI clock */
     SPI_ClockCfg_Type clockCfg = {
         2, /* Length of start condition */
@@ -85,8 +84,7 @@ int spi_open(struct device *dev, uint16_t oflag)
 
     SPI_ClockConfig(spi_device->id, &clockCfg);
 
-    spiCfg.deglitchEnable = SPI_DEGLITCH_ENABLE;
-    spiCfg.continuousEnable = SPI_CONTINUE_TRANSFER_ENABLE;
+    spiCfg.continuousEnable = 1;
 
     if (spi_device->direction == SPI_LSB_BYTE0_DIRECTION_FIRST) {
         spiCfg.bitSequence = SPI_BIT_INVERSE_LSB_FIRST;
@@ -106,8 +104,14 @@ int spi_open(struct device *dev, uint16_t oflag)
     spiCfg.clkPhaseInv = spi_device->clk_phase;
     spiCfg.frameSize = spi_device->datasize;
 
+    if (spi_device->delitch_cnt) {
+        spiCfg.deglitchEnable = 1;
+    }
+
     /* SPI config */
     SPI_Init(spi_device->id, &spiCfg);
+
+    SPI_SetDeglitchCount(spi_device->id, spi_device->delitch_cnt);
 
     fifoCfg.txFifoThreshold = spi_device->fifo_threshold;
     fifoCfg.txFifoDmaEnable = DISABLE;
@@ -145,6 +149,7 @@ int spi_close(struct device *dev)
     spi_device_t *spi_device = (spi_device_t *)dev;
 
     SPI_Disable(spi_device->id, spi_device->mode);
+    GLB_AHB_Slave1_Reset(BL_AHB_SLAVE1_SPI);
     return 0;
 }
 /**
@@ -229,6 +234,21 @@ int spi_control(struct device *dev, int cmd, void *args)
             break;
         }
 
+        case DEVICE_CTRL_SPI_GET_TX_FIFO :
+            return SPI_GetTxFifoCount(spi_device->id);
+
+        case DEVICE_CTRL_SPI_GET_RX_FIFO :
+            return SPI_GetRxFifoCount(spi_device->id);
+
+        case DEVICE_CTRL_SPI_CLEAR_TX_FIFO :
+            return SPI_ClrTxFifo(spi_device->id);
+
+        case DEVICE_CTRL_SPI_CLEAR_RX_FIFO :
+            return SPI_ClrRxFifo(spi_device->id);
+
+        case DEVICE_CTRL_SPI_GET_BUS_BUSY_STATUS :
+            return SPI_GetBusyStatus(spi_device->id);
+
         default:
             break;
     }
@@ -246,6 +266,7 @@ int spi_control(struct device *dev, int cmd, void *args)
  */
 int spi_write(struct device *dev, uint32_t pos, const void *buffer, uint32_t size)
 {
+    int ret = 0;
     spi_device_t *spi_device = (spi_device_t *)dev;
 
     if (dev->oflag & DEVICE_OFLAG_DMA_TX) {
@@ -275,13 +296,12 @@ int spi_write(struct device *dev, uint32_t pos, const void *buffer, uint32_t siz
                     break;
             }
 
-            dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_SPI_TDR, size);
+            ret = dma_reload(dma_ch, (uint32_t)buffer, (uint32_t)DMA_ADDR_SPI_TDR, size);
             dma_channel_start(dma_ch);
         }
-
-        return 0;
+        return ret;
     } else if (dev->oflag & DEVICE_OFLAG_INT_TX) {
-        return -1;
+        return -2;
     } else {
         if (spi_device->datasize == SPI_DATASIZE_8BIT) {
             return SPI_Send_8bits(spi_device->id, (uint8_t *)buffer, size, SPI_TIMEOUT_DISABLE);
@@ -305,6 +325,7 @@ int spi_write(struct device *dev, uint32_t pos, const void *buffer, uint32_t siz
  */
 int spi_read(struct device *dev, uint32_t pos, void *buffer, uint32_t size)
 {
+    int ret = 0;
     spi_device_t *spi_device = (spi_device_t *)dev;
 
     if (dev->oflag & DEVICE_OFLAG_DMA_RX) {
@@ -332,16 +353,13 @@ int spi_read(struct device *dev, uint32_t pos, void *buffer, uint32_t size)
                     break;
                 default:
                     break;
-                    dma_reload(dma_ch, (uint32_t)DMA_ADDR_SPI_RDR, (uint32_t)buffer, size);
-                    dma_channel_start(dma_ch);
             }
-            dma_reload(dma_ch, (uint32_t)DMA_ADDR_SPI_RDR, (uint32_t)buffer, size);
+            ret = dma_reload(dma_ch, (uint32_t)DMA_ADDR_SPI_RDR, (uint32_t)buffer, size);
             dma_channel_start(dma_ch);
         }
-
-        return 0;
+        return ret;
     } else if (dev->oflag & DEVICE_OFLAG_INT_TX) {
-        return -1;
+        return -2;
     } else {
         if (spi_device->datasize == SPI_DATASIZE_8BIT) {
             return SPI_Recv_8bits(spi_device->id, (uint8_t *)buffer, size, SPI_TIMEOUT_DISABLE);

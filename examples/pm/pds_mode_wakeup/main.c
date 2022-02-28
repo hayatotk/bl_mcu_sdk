@@ -20,6 +20,7 @@
  * under the License.
  *
  */
+#include "bflb_platform.h"
 #include "hal_uart.h"
 #include "hal_pm.h"
 #include "hal_gpio.h"
@@ -29,8 +30,10 @@ void shell_irq_callback(struct device *dev, void *args, uint32_t size, uint32_t 
 {
     uint8_t data;
     if (state == UART_EVENT_RX_FIFO) {
-        data = *(uint8_t *)args;
-        shell_handler(data);
+        for (size_t i = 0; i < size; i++) {
+            data = *(uint8_t *)(args + i);
+            shell_handler(data);
+        }
     }
 }
 

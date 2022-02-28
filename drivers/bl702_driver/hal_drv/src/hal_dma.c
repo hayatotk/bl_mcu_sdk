@@ -23,7 +23,21 @@
 #include "hal_dma.h"
 #include "bl702_dma.h"
 
-static dma_control_data_t dma_ctrl_cfg;
+#define DMA_CHANNEL_BASE(id_base, ch) ((id_base) + DMA_CHANNEL_OFFSET + (ch)*0x100)
+
+static const uint32_t dma_channel_base[][8] = {
+    {
+        DMA_CHANNEL_BASE(DMA_BASE, 0),
+        DMA_CHANNEL_BASE(DMA_BASE, 1),
+        DMA_CHANNEL_BASE(DMA_BASE, 2),
+        DMA_CHANNEL_BASE(DMA_BASE, 3),
+        DMA_CHANNEL_BASE(DMA_BASE, 4),
+        DMA_CHANNEL_BASE(DMA_BASE, 5),
+        DMA_CHANNEL_BASE(DMA_BASE, 6),
+        DMA_CHANNEL_BASE(DMA_BASE, 7),
+    }
+
+};
 
 static void DMA0_IRQ(void);
 
@@ -63,8 +77,7 @@ static dma_device_t dmax_device[DMA_MAX_INDEX] = {
 int dma_open(struct device *dev, uint16_t oflag)
 {
     dma_device_t *dma_device = (dma_device_t *)dev;
-
-    DMA_LLI_Cfg_Type lliCfg = { 0 };
+    DMA_Channel_Cfg_Type chCfg = { 0 };
 
     /* Disable all interrupt */
     DMA_IntMask(dma_device->ch, DMA_INT_ALL, MASK);
@@ -75,15 +88,17 @@ int dma_open(struct device *dev, uint16_t oflag)
 
     DMA_Channel_Disable(dma_device->ch);
 
-    lliCfg.dir = dma_device->direction;
-    lliCfg.srcPeriph = dma_device->src_req;
-    lliCfg.dstPeriph = dma_device->dst_req;
-
-    DMA_LLI_Init(dma_device->ch, &lliCfg);
-
-    dma_ctrl_cfg.bits.fix_cnt = 0;
-    dma_ctrl_cfg.bits.dst_min_mode = 0;
-    dma_ctrl_cfg.bits.dst_add_mode = 0;
+    chCfg.ch = dma_device->ch;
+    chCfg.dir = dma_device->direction;
+    chCfg.srcPeriph = dma_device->src_req;
+    chCfg.dstPeriph = dma_device->dst_req;
+    chCfg.srcAddrInc = dma_device->src_addr_inc;
+    chCfg.destAddrInc = dma_device->dst_addr_inc;
+    chCfg.srcBurstSzie = dma_device->src_burst_size;
+    chCfg.dstBurstSzie = dma_device->dst_burst_size;
+    chCfg.srcTransfWidth = dma_device->src_width;
+    chCfg.dstTransfWidth = dma_device->dst_width;
+    DMA_Channel_Init(&chCfg);
 
     DMA_Enable();
 
@@ -105,52 +120,52 @@ int dma_control(struct device *dev, int cmd, void *args)
     dma_device_t *dma_device = (dma_device_t *)dev;
 
     switch (cmd) {
-        case DEVICE_CTRL_SET_INT /* constant-expression */:
+        case DEVICE_CTRL_SET_INT:
             /* Dma interrupt configuration */
             DMA_IntMask(dma_device->ch, DMA_INT_TCOMPLETED, UNMASK);
             DMA_IntMask(dma_device->ch, DMA_INT_ERR, UNMASK);
 
             break;
 
-        case DEVICE_CTRL_CLR_INT /* constant-expression */:
+        case DEVICE_CTRL_CLR_INT:
             /* Dma interrupt configuration */
             DMA_IntMask(dma_device->ch, DMA_INT_TCOMPLETED, MASK);
             DMA_IntMask(dma_device->ch, DMA_INT_ERR, MASK);
 
             break;
 
-        case DEVICE_CTRL_GET_INT /* constant-expression */:
-            /* code */
+        case DEVICE_CTRL_GET_INT:
             break;
 
-        case DEVICE_CTRL_CONFIG /* constant-expression */: {
-            dma_ctrl_param_t *cfg = (dma_ctrl_param_t *)args;
-            DMA_LLI_Cfg_Type lliCfg = { 0 };
-
-            lliCfg.dir = cfg->direction;
-            lliCfg.srcPeriph = cfg->src_req;
-            lliCfg.dstPeriph = cfg->dst_req;
-
-            DMA_LLI_Init(dma_device->ch, &lliCfg);
-
+        case DEVICE_CTRL_CONFIG:
             break;
-        }
 
-        case DMA_CHANNEL_UPDATE:
+        case DEVICE_CTRL_DMA_CHANNEL_UPDATE:
             DMA_LLI_Update(dma_device->ch, (uint32_t)args);
             break;
 
-        case DMA_CHANNEL_GET_STATUS /* constant-expression */:
+        case DEVICE_CTRL_DMA_CHANNEL_GET_STATUS:
             return DMA_Channel_Is_Busy(dma_device->ch);
 
-        case DMA_CHANNEL_START /* constant-expression */:
+        case DEVICE_CTRL_DMA_CHANNEL_START:
             DMA_Channel_Enable(dma_device->ch);
             break;
 
-        case DMA_CHANNEL_STOP /* constant-expression */:
+        case DEVICE_CTRL_DMA_CHANNEL_STOP:
             DMA_Channel_Disable(dma_device->ch);
             break;
+        case DEVICE_CTRL_DMA_CONFIG_SI: {
+            uint32_t tmpVal = BL_RD_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL);
+            tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_SI, ((uint32_t)args) & 0x01);
+            BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL, tmpVal);
 
+        } break;
+        case DEVICE_CTRL_DMA_CONFIG_DI: {
+            uint32_t tmpVal = BL_RD_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL);
+            tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_DI, ((uint32_t)args) & 0x01);
+            BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL, tmpVal);
+
+        } break;
         default:
             break;
     }
@@ -165,7 +180,11 @@ int dma_control(struct device *dev, int cmd, void *args)
  */
 int dma_close(struct device *dev)
 {
-    DMA_Disable();
+    dma_device_t *dma_device = (dma_device_t *)dev;
+    DMA_Channel_Cfg_Type chCfg = { 0 };
+
+    DMA_Channel_Disable(dma_device->ch);
+    DMA_Channel_Init(&chCfg);
     return 0;
 }
 
@@ -261,10 +280,14 @@ int dma_allocate_register(const char *name)
  */
 int dma_reload(struct device *dev, uint32_t src_addr, uint32_t dst_addr, uint32_t transfer_size)
 {
+#if defined(BSP_USING_DMA0_CH0) || defined(BSP_USING_DMA0_CH1) || defined(BSP_USING_DMA0_CH2) || defined(BSP_USING_DMA0_CH3) || \
+    defined(BSP_USING_DMA0_CH4) || defined(BSP_USING_DMA0_CH5) || defined(BSP_USING_DMA0_CH6) || defined(BSP_USING_DMA0_CH7)
+
     uint32_t malloc_count;
     uint32_t remain_len;
     uint32_t actual_transfer_len = 0;
     uint32_t actual_transfer_offset = 0;
+    dma_control_data_t dma_ctrl_cfg;
 
     dma_device_t *dma_device = (dma_device_t *)dev;
 
@@ -273,34 +296,6 @@ int dma_reload(struct device *dev, uint32_t src_addr, uint32_t dst_addr, uint32_
     if (transfer_size == 0) {
         return 0;
     }
-
-    switch (dma_device->direction) {
-        case DMA_MEMORY_TO_MEMORY:
-            dma_ctrl_cfg.bits.SI = 1;
-            dma_ctrl_cfg.bits.DI = 1;
-            break;
-        case DMA_MEMORY_TO_PERIPH:
-            dma_ctrl_cfg.bits.SI = 1;
-            dma_ctrl_cfg.bits.DI = 0;
-            break;
-        case DMA_PERIPH_TO_MEMORY:
-            dma_ctrl_cfg.bits.SI = 0;
-            dma_ctrl_cfg.bits.DI = 1;
-            break;
-        case DMA_PERIPH_TO_PERIPH:
-            dma_ctrl_cfg.bits.SI = 0;
-            dma_ctrl_cfg.bits.DI = 0;
-            break;
-
-        default:
-            return -3;
-            break;
-    }
-
-    dma_ctrl_cfg.bits.SBSize = dma_device->src_burst_size;
-    dma_ctrl_cfg.bits.DBSize = dma_device->dst_burst_size;
-    dma_ctrl_cfg.bits.SWidth = dma_device->src_width;
-    dma_ctrl_cfg.bits.DWidth = dma_device->dst_width;
 
     switch (dma_device->src_width) {
         case DMA_TRANSFER_WIDTH_8BIT:
@@ -328,6 +323,8 @@ int dma_reload(struct device *dev, uint32_t src_addr, uint32_t dst_addr, uint32_
             break;
     }
 
+    dma_ctrl_cfg = (dma_control_data_t)(BL_RD_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL));
+
     malloc_count = actual_transfer_len / 4095;
     remain_len = actual_transfer_len % 4095;
 
@@ -335,12 +332,7 @@ int dma_reload(struct device *dev, uint32_t src_addr, uint32_t dst_addr, uint32_
         malloc_count++;
     }
 
-    if (dma_device->lli_cfg) {
-        free(dma_device->lli_cfg);
-        dma_device->lli_cfg = (dma_lli_ctrl_t *)malloc(sizeof(dma_lli_ctrl_t) * malloc_count);
-    } else {
-        dma_device->lli_cfg = (dma_lli_ctrl_t *)malloc(sizeof(dma_lli_ctrl_t) * malloc_count);
-    }
+    dma_device->lli_cfg = (dma_lli_ctrl_t *)realloc(dma_device->lli_cfg, sizeof(dma_lli_ctrl_t) * malloc_count);
 
     if (dma_device->lli_cfg) {
         /*transfer_size will be integer multiple of 4095*n or 4095*2*n or 4095*4*n,(n>0) */
@@ -375,64 +367,56 @@ int dma_reload(struct device *dev, uint32_t src_addr, uint32_t dst_addr, uint32_
                 dma_device->lli_cfg[i - 1].nextlli = (uint32_t)&dma_device->lli_cfg[i];
             }
 
-            memcpy(&dma_device->lli_cfg[i].cfg, &dma_ctrl_cfg, sizeof(dma_control_data_t));
+            dma_device->lli_cfg[i].cfg = dma_ctrl_cfg;
         }
-
-        DMA_LLI_Update(dma_device->ch, (uint32_t)dma_device->lli_cfg);
+        BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_SRCADDR, dma_device->lli_cfg[0].src_addr);
+        BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_DSTADDR, dma_device->lli_cfg[0].dst_addr);
+        BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_LLI, dma_device->lli_cfg[0].nextlli);
+        BL_WR_REG(dma_channel_base[dma_device->id][dma_device->ch], DMA_CONTROL, dma_device->lli_cfg[0].cfg.WORD);
     } else {
         return -2;
     }
-
+#endif
     return 0;
 }
+
 /**
  * @brief
  *
  * @param handle
  */
-void dma_isr(dma_device_t *handle)
+void dma_channel_isr(dma_device_t *handle)
 {
     uint32_t tmpVal;
     uint32_t intClr;
 
     /* Get DMA register */
-    if (handle->id == 0) {
-        uint32_t DMAChs = DMA_BASE;
+    uint32_t DMAChs = DMA_BASE;
 
-        for (uint8_t i = 0; i < DMA_MAX_INDEX; i++) {
-            tmpVal = BL_RD_REG(DMAChs, DMA_INTTCSTATUS);
+    if (!handle->parent.callback) {
+        return;
+    }
 
-            if ((BL_GET_REG_BITS_VAL(tmpVal, DMA_INTTCSTATUS) & (1 << handle[i].ch)) != 0) {
-                /* Clear interrupt */
-                tmpVal = BL_RD_REG(DMAChs, DMA_INTTCCLEAR);
-                intClr = BL_GET_REG_BITS_VAL(tmpVal, DMA_INTTCCLEAR);
-                intClr |= (1 << handle[i].ch);
-                tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_INTTCCLEAR, intClr);
-                BL_WR_REG(DMAChs, DMA_INTTCCLEAR, tmpVal);
+    tmpVal = BL_RD_REG(DMAChs, DMA_INTTCSTATUS);
+    if ((BL_GET_REG_BITS_VAL(tmpVal, DMA_INTTCSTATUS) & (1 << handle->ch)) != 0) {
+        /* Clear interrupt */
+        tmpVal = BL_RD_REG(DMAChs, DMA_INTTCCLEAR);
+        intClr = BL_GET_REG_BITS_VAL(tmpVal, DMA_INTTCCLEAR);
+        intClr |= (1 << handle->ch);
+        tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_INTTCCLEAR, intClr);
+        BL_WR_REG(DMAChs, DMA_INTTCCLEAR, tmpVal);
+        handle->parent.callback(&handle->parent, NULL, 0, DMA_INT_TCOMPLETED);
+    }
 
-                if (handle[i].parent.callback) {
-                    handle[i].parent.callback(&handle[i].parent, NULL, 0, DMA_INT_TCOMPLETED);
-                }
-            }
-        }
-
-        for (uint8_t i = 0; i < DMA_MAX_INDEX; i++) {
-            tmpVal = BL_RD_REG(DMAChs, DMA_INTERRORSTATUS);
-
-            if ((BL_GET_REG_BITS_VAL(tmpVal, DMA_INTERRORSTATUS) & (1 << handle[i].ch)) != 0) {
-                /*Clear interrupt */
-                tmpVal = BL_RD_REG(DMAChs, DMA_INTERRCLR);
-                intClr = BL_GET_REG_BITS_VAL(tmpVal, DMA_INTERRCLR);
-                intClr |= (1 << handle[i].ch);
-                tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_INTERRCLR, intClr);
-                BL_WR_REG(DMAChs, DMA_INTERRCLR, tmpVal);
-
-                if (handle[i].parent.callback) {
-                    handle[i].parent.callback(&handle->parent, NULL, 0, DMA_INT_ERR);
-                }
-            }
-        }
-    } else {
+    tmpVal = BL_RD_REG(DMAChs, DMA_INTERRORSTATUS);
+    if ((BL_GET_REG_BITS_VAL(tmpVal, DMA_INTERRORSTATUS) & (1 << handle->ch)) != 0) {
+        /*Clear interrupt */
+        tmpVal = BL_RD_REG(DMAChs, DMA_INTERRCLR);
+        intClr = BL_GET_REG_BITS_VAL(tmpVal, DMA_INTERRCLR);
+        intClr |= (1 << handle->ch);
+        tmpVal = BL_SET_REG_BITS_VAL(tmpVal, DMA_INTERRCLR, intClr);
+        BL_WR_REG(DMAChs, DMA_INTERRCLR, tmpVal);
+        handle->parent.callback(&handle->parent, NULL, 0, DMA_INT_ERR);
     }
 }
 /**
@@ -441,5 +425,7 @@ void dma_isr(dma_device_t *handle)
  */
 void DMA0_IRQ(void)
 {
-    dma_isr(&dmax_device[0]);
+    for (uint8_t i = 0; i < DMA_MAX_INDEX; i++) {
+        dma_channel_isr(&dmax_device[i]);
+    }
 }

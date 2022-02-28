@@ -21,7 +21,9 @@
  *
  */
 #include "bl702_common.h"
-#include "bl702.h"
+#include "bflb_platform.h"
+#include "risc-v/Core/Include/clic.h"
+#include "risc-v/Core/Include/riscv_encoding.h"
 
 pFunc __Interrupt_Handlers[IRQn_LAST] = { 0 };
 

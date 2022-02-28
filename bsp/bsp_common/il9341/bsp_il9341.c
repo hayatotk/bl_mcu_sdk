@@ -20,7 +20,7 @@
  * under the License.
  *
  */
-
+#include "bflb_platform.h"
 #include "bsp_il9341.h"
 #include "hal_spi.h"
 #include "hal_dma.h"
@@ -115,6 +115,10 @@ void spi0_init(void)
         DMA_DEV(dma_ch3)->transfer_mode = DMA_LLI_ONCE_MODE;
         DMA_DEV(dma_ch3)->src_req = DMA_REQUEST_NONE;
         DMA_DEV(dma_ch3)->dst_req = DMA_REQUEST_SPI0_TX;
+        DMA_DEV(dma_ch3)->src_addr_inc = DMA_ADDR_INCREMENT_ENABLE;
+        DMA_DEV(dma_ch3)->dst_addr_inc = DMA_ADDR_INCREMENT_DISABLE;
+        DMA_DEV(dma_ch3)->src_burst_size = DMA_BURST_1BYTE;
+        DMA_DEV(dma_ch3)->dst_burst_size = DMA_BURST_1BYTE;
         DMA_DEV(dma_ch3)->src_width = DMA_TRANSFER_WIDTH_8BIT;
         DMA_DEV(dma_ch3)->dst_width = DMA_TRANSFER_WIDTH_8BIT;
         device_open(dma_ch3, 0);
@@ -136,6 +140,10 @@ void spi0_init(void)
         DMA_DEV(dma_ch4)->transfer_mode = DMA_LLI_ONCE_MODE;
         DMA_DEV(dma_ch4)->src_req = DMA_REQUEST_SPI0_RX;
         DMA_DEV(dma_ch4)->dst_req = DMA_REQUEST_NONE;
+        DMA_DEV(dma_ch4)->src_addr_inc = DMA_ADDR_INCREMENT_DISABLE;
+        DMA_DEV(dma_ch4)->dst_addr_inc = DMA_ADDR_INCREMENT_ENABLE;
+        DMA_DEV(dma_ch4)->src_burst_size = DMA_BURST_1BYTE;
+        DMA_DEV(dma_ch4)->dst_burst_size = DMA_BURST_1BYTE;
         DMA_DEV(dma_ch4)->src_width = DMA_TRANSFER_WIDTH_8BIT;
         DMA_DEV(dma_ch4)->dst_width = DMA_TRANSFER_WIDTH_8BIT;
         device_open(dma_ch4, 0);
@@ -625,7 +633,7 @@ void LCD_DrawChinese(uint16_t x, uint16_t y, uint8_t *character, uint16_t bk_col
 // color为字体颜色，bk_color为背景颜色,num为最大显示数量(汉字算两个)
 void LCD_DrawFont(uint16_t x, uint16_t y, uint16_t color, uint16_t bk_color, uint8_t *str, uint8_t num)
 {
-    uint8_t i, j, k, l, x0 = x;
+    uint8_t i, j, k, x0 = x;
     uint8_t temp, m;
 
     for (i = 0; i < num && *str; i++, str++) {
@@ -701,7 +709,7 @@ void LCD_DrawFont(uint16_t x, uint16_t y, uint16_t color, uint16_t bk_color, uin
 
 void LCD_DrawFont_64x32(uint16_t x, uint16_t y, uint16_t color, uint16_t bk_color, uint8_t *str, uint8_t num)
 {
-    uint16_t i, j, k, l, x0 = x;
+    uint16_t i, j, k, x0 = x;
     uint8_t temp, m;
 
     for (i = 0; i < num && *str; i++, str++) {

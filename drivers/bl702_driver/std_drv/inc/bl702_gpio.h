@@ -127,9 +127,6 @@ typedef enum {
     GPIO_FUN_PWM = 8,
     GPIO_FUN_CAM = 9,
     GPIO_FUN_ANALOG = 10,
-    GPIO_FUN_USB = 10,
-    GPIO_FUN_DAC = 10,
-    GPIO_FUN_ADC = 10,
     GPIO_FUN_GPIO = 11,
     GPIO_FUN_RF_TEST = 12,
     GPIO_FUN_SCAN = 13,
@@ -141,32 +138,35 @@ typedef enum {
     GPIO_FUN_ETHER_MAC = 19,
     GPIO_FUN_EMAC = 19,
     GPIO_FUN_QDEC = 20,
-    GPIO_FUN_QDEC_LED = 24,
     GPIO_FUN_KEY_SCAN_IN = 21,
     GPIO_FUN_KEY_SCAN_ROW = 21,
     GPIO_FUN_KEY_SCAN_DRIVE = 22,
     GPIO_FUN_KEY_SCAN_COL = 22,
     GPIO_FUN_CAM_MISC = 23,
-    GPIO_FUN_UART0_RTS = 0x70,
-    GPIO_FUN_UART0_CTS = 0x71,
-    GPIO_FUN_UART0_TX = 0x72,
-    GPIO_FUN_UART0_RX = 0x73,
-    GPIO_FUN_UART1_RTS = 0x74,
-    GPIO_FUN_UART1_CTS = 0x75,
-    GPIO_FUN_UART1_TX = 0x76,
-    GPIO_FUN_UART1_RX = 0x77,
-    GPIO_FUN_GPIO_OUTPUT_UP = 240,
-    GPIO_FUN_GPIO_OUTPUT_DOWN = 241,
-    GPIO_FUN_GPIO_OUTPUT_NONE = 242,
-    GPIO_FUN_GPIO_INPUT_UP = 243,
-    GPIO_FUN_GPIO_INPUT_DOWN = 244,
-    GPIO_FUN_GPIO_INPUT_NONE = 245,
-    GPIO_FUN_GPIO_EXTI_RISING_EDGE = 246,
-    GPIO_FUN_GPIO_EXTI_FALLING_EDGE = 247,
-    GPIO_FUN_GPIO_EXTI_HIGH_LEVEL = 248,
-    GPIO_FUN_GPIO_EXTI_LOW_LEVEL = 249,
-    GPIO_FUN_WAKEUP = 250,
-    GPIO_FUN_UNUSED = 255
+    GPIO_FUN_USB = 0xD0,
+    GPIO_FUN_DAC = 0xD1,
+    GPIO_FUN_ADC = 0xD2,
+    GPIO_FUN_QDEC_LED = 0xD3,
+    GPIO_FUN_GPIO_OUTPUT_UP = 0xE0,
+    GPIO_FUN_GPIO_OUTPUT_DOWN = 0xE1,
+    GPIO_FUN_GPIO_OUTPUT_NONE = 0xE2,
+    GPIO_FUN_GPIO_INPUT_UP = 0xE3,
+    GPIO_FUN_GPIO_INPUT_DOWN = 0xE4,
+    GPIO_FUN_GPIO_INPUT_NONE = 0xE5,
+    GPIO_FUN_GPIO_EXTI_RISING_EDGE = 0xE6,
+    GPIO_FUN_GPIO_EXTI_FALLING_EDGE = 0xE7,
+    GPIO_FUN_GPIO_EXTI_HIGH_LEVEL = 0xE8,
+    GPIO_FUN_GPIO_EXTI_LOW_LEVEL = 0xE9,
+    GPIO_FUN_UART0_RTS = 0xF0,
+    GPIO_FUN_UART0_CTS = 0xF1,
+    GPIO_FUN_UART0_TX = 0xF2,
+    GPIO_FUN_UART0_RX = 0xF3,
+    GPIO_FUN_UART1_RTS = 0xF4,
+    GPIO_FUN_UART1_CTS = 0xF5,
+    GPIO_FUN_UART1_TX = 0xF6,
+    GPIO_FUN_UART1_RX = 0xF7,
+    GPIO_FUN_WAKEUP = 0xFE,
+    GPIO_FUN_UNUSED = 0xFF
 } GLB_GPIO_FUNC_Type;
 
 typedef struct
@@ -184,7 +184,7 @@ typedef struct
 #define GPIO0_FUN_BT_ABORT              1
 #define GPIO0_FUN_UNUSED2               2
 #define GPIO0_FUN_I2S0_BCLK             3
-#define GPIO0_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO0_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO0_FUN_I2C0_SCL              6
 #define GPIO0_FUN_UART_SIG0_UART_SIG4   7
 #define GPIO0_FUN_PWM_CH0               8
@@ -208,7 +208,7 @@ typedef struct
 #define GPIO1_FUN_BT_ACTIVE             1
 #define GPIO1_FUN_UNUSED2               2
 #define GPIO1_FUN_I2S0_FS               3
-#define GPIO1_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO1_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO1_FUN_I2C0_SDA              6
 #define GPIO1_FUN_UART_SIG1_UART_SIG5   7
 #define GPIO1_FUN_PWM_CH1               8
@@ -280,7 +280,7 @@ typedef struct
 #define GPIO4_FUN_BT_ACTIVE             1
 #define GPIO4_FUN_UNUSED2               2
 #define GPIO4_FUN_I2S0_BCLK             3
-#define GPIO4_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO4_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO4_FUN_I2C0_SCL              6
 #define GPIO4_FUN_UART_SIG4_UART_SIG0   7
 #define GPIO4_FUN_PWM_CH4               8
@@ -304,7 +304,7 @@ typedef struct
 #define GPIO5_FUN_BT_PRI                1
 #define GPIO5_FUN_UNUSED2               2
 #define GPIO5_FUN_I2S0_FS               3
-#define GPIO5_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO5_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO5_FUN_I2C0_SDA              6
 #define GPIO5_FUN_UART_SIG5_UART_SIG1   7
 #define GPIO5_FUN_PWM_CH0               8
@@ -376,7 +376,7 @@ typedef struct
 #define GPIO8_FUN_BT_PRI                1
 #define GPIO8_FUN_UNUSED2               2
 #define GPIO8_FUN_I2S0_BCLK             3
-#define GPIO8_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO8_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO8_FUN_I2C0_SCL              6
 #define GPIO8_FUN_UART_SIG0_UART_SIG4   7
 #define GPIO8_FUN_PWM_CH3               8
@@ -400,7 +400,7 @@ typedef struct
 #define GPIO9_FUN_BT_ABORT                          1
 #define GPIO9_FUN_UNUSED2                           2
 #define GPIO9_FUN_I2S0_FS                           3
-#define GPIO9_FUN_SPI_0_MOSI_SPI_0_MISO             4
+#define GPIO9_FUN_SPI_0_MISO_SPI_0_MOSI             4
 #define GPIO9_FUN_I2C0_SDA                          6
 #define GPIO9_FUN_UART_SIG1_UART_SIG5               7
 #define GPIO9_FUN_PWM_CH4                           8
@@ -472,7 +472,7 @@ typedef struct
 #define GPIO12_FUN_BT_ABORT              1
 #define GPIO12_FUN_UNUSED2               2
 #define GPIO12_FUN_I2S0_BCLK             3
-#define GPIO12_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO12_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO12_FUN_I2C0_SCL              6
 #define GPIO12_FUN_UART_SIG4_UART_SIG0   7
 #define GPIO12_FUN_PWM_CH2               8
@@ -496,7 +496,7 @@ typedef struct
 #define GPIO13_FUN_BT_ACTIVE             1
 #define GPIO13_FUN_UNUSED2               2
 #define GPIO13_FUN_I2S0_FS               3
-#define GPIO13_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO13_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO13_FUN_I2C0_SDA              6
 #define GPIO13_FUN_UART_SIG5_UART_SIG1   7
 #define GPIO13_FUN_PWM_CH3               8
@@ -568,7 +568,7 @@ typedef struct
 #define GPIO16_FUN_BT_ACTIVE             1
 #define GPIO16_FUN_UNUSED2               2
 #define GPIO16_FUN_I2S0_BCLK             3
-#define GPIO16_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO16_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO16_FUN_I2C0_SCL              6
 #define GPIO16_FUN_UART_SIG0_UART_SIG4   7
 #define GPIO16_FUN_PWM_CH1               8
@@ -592,7 +592,7 @@ typedef struct
 #define GPIO17_FUN_BT_PRI                1
 #define GPIO17_FUN_SF_IO_0_SF2_CS2       2
 #define GPIO17_FUN_I2S0_FS               3
-#define GPIO17_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO17_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO17_FUN_I2C0_SDA              6
 #define GPIO17_FUN_UART_SIG1_UART_SIG5   7
 #define GPIO17_FUN_PWM_CH2               8
@@ -664,7 +664,7 @@ typedef struct
 #define GPIO20_FUN_BT_PRI                1
 #define GPIO20_FUN_SF_IO_3               2
 #define GPIO20_FUN_I2S0_BCLK             3
-#define GPIO20_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO20_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO20_FUN_I2C0_SCL              6
 #define GPIO20_FUN_UART_SIG4_UART_SIG0   7
 #define GPIO20_FUN_PWM_CH0               8
@@ -688,7 +688,7 @@ typedef struct
 #define GPIO21_FUN_BT_ABORT              1
 #define GPIO21_FUN_SF_CLK                2
 #define GPIO21_FUN_I2S0_FS               3
-#define GPIO21_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO21_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO21_FUN_I2C0_SDA              6
 #define GPIO21_FUN_UART_SIG5_UART_SIG1   7
 #define GPIO21_FUN_PWM_CH1               8
@@ -760,7 +760,7 @@ typedef struct
 #define GPIO24_FUN_BT_ABORT              1
 #define GPIO24_FUN_SF2_IO_1              2
 #define GPIO24_FUN_I2S0_BCLK             3
-#define GPIO24_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO24_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO24_FUN_I2C0_SCL              6
 #define GPIO24_FUN_UART_SIG0_UART_SIG4   7
 #define GPIO24_FUN_PWM_CH4               8
@@ -784,7 +784,7 @@ typedef struct
 #define GPIO25_FUN_BT_ACTIVE             1
 #define GPIO25_FUN_SF2_CS                2
 #define GPIO25_FUN_I2S0_FS               3
-#define GPIO25_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO25_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO25_FUN_I2C0_SDA              6
 #define GPIO25_FUN_UART_SIG1_UART_SIG5   7
 #define GPIO25_FUN_PWM_CH0               8
@@ -856,7 +856,7 @@ typedef struct
 #define GPIO28_FUN_BT_ACTIVE             1
 #define GPIO28_FUN_SF2_IO_0              2
 #define GPIO28_FUN_I2S0_BCLK             3
-#define GPIO28_FUN_SPI_0_MISO_SPI_0_MOSI 4
+#define GPIO28_FUN_SPI_0_MOSI_SPI_0_MISO 4
 #define GPIO28_FUN_I2C0_SCL              6
 #define GPIO28_FUN_UART_SIG4_UART_SIG0   7
 #define GPIO28_FUN_PWM_CH3               8
@@ -880,7 +880,7 @@ typedef struct
 #define GPIO29_FUN_BT_PRI                1
 #define GPIO29_FUN_UNUSED2               2
 #define GPIO29_FUN_I2S0_FS               3
-#define GPIO29_FUN_SPI_0_MOSI_SPI_0_MISO 4
+#define GPIO29_FUN_SPI_0_MISO_SPI_0_MOSI 4
 #define GPIO29_FUN_I2C0_SDA              6
 #define GPIO29_FUN_UART_SIG5_UART_SIG1   7
 #define GPIO29_FUN_PWM_CH4               8
@@ -947,5 +947,6 @@ typedef struct
 #define GPIO31_FUN_ROW_I_7             21
 #define GPIO31_FUN_COL_O_11            22
 #define GPIO31_FUN_CAM_REF_CLK         23
+
 
 #endif /*__BL702_GPIO_H__ */

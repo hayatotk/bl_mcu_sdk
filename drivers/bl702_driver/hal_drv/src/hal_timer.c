@@ -21,10 +21,9 @@
  *
  */
 #include "hal_timer.h"
-#include "timer_config.h"
+#include "hal_clock.h"
 #include "bl702_glb.h"
 #include "bl702_timer.h"
-#include "hal_clock.h"
 
 #ifdef BSP_USING_TIMER0
 void TIMER0_IRQ(void);
@@ -347,20 +346,21 @@ void timer_isr(timer_device_t *handle)
 
     /* Comparator 0 match interrupt */
     if (BL_IS_REG_BIT_SET(intId, TIMER_TMSR_0)) {
-        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP0);
         BL_WR_WORD(tmpAddr, BL_SET_REG_BIT(tmpVal, TIMER_TCLR_0));
+        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP0);
+
     }
 
     /* Comparator 1 match interrupt */
     if (BL_IS_REG_BIT_SET(intId, TIMER_TMSR_1)) {
-        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP1);
         BL_WR_WORD(tmpAddr, BL_SET_REG_BIT(tmpVal, TIMER_TCLR_1));
+        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP1);
     }
 
     /* Comparator 2 match interrupt */
     if (BL_IS_REG_BIT_SET(intId, TIMER_TMSR_2)) {
-        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP2);
         BL_WR_WORD(tmpAddr, BL_SET_REG_BIT(tmpVal, TIMER_TCLR_2));
+        handle->parent.callback(&handle->parent, NULL, 0, TIMER_EVENT_COMP2);
     }
 }
 
