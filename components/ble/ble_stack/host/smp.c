@@ -1874,9 +1874,11 @@ static void smp_pairing_complete(struct bt_smp *smp, u8_t status)
         }
 #endif /* CONFIG_BT_BREDR */
         bool bond_flag = atomic_test_bit(smp->flags, SMP_FLAG_BOND);
+        BT_DBG("bonding flag is %d", bond_flag);
 
 #if defined(CONFIG_BT_SETTINGS)
         if (bond_flag) {
+            BT_DBG("Store pairing info\n\n");
             bt_keys_store(smp->chan.chan.conn->le.keys);
         }
 #endif
@@ -2904,7 +2906,12 @@ static int smp_send_security_req(struct bt_conn *conn)
     req->auth_req = get_auth(conn, BT_SMP_AUTH_DEFAULT);
 
     /* SMP timer is not restarted for SecRequest so don't use smp_send */
-    bt_l2cap_send(conn, BT_L2CAP_CID_SMP, req_buf);
+    int err = bt_l2cap_send(conn, BT_L2CAP_CID_SMP, req_buf);
+
+    if (err) {
+		net_buf_unref(req_buf);
+		return err;
+	}
 
     atomic_set_bit(smp->flags, SMP_FLAG_SEC_REQ);
     atomic_set_bit(&smp->allowed_cmds, BT_SMP_CMD_PAIRING_REQ);

@@ -521,7 +521,7 @@ int bt_l2cap_send_cb(struct bt_conn *conn, u16_t cid, struct net_buf *buf,
 {
     struct bt_l2cap_hdr *hdr;
 
-    BT_DBG("conn %p cid %u len %zu", conn, cid, net_buf_frags_len(buf));
+    // BT_DBG("conn %p cid %u len %zu", conn, cid, net_buf_frags_len(buf));
 
     hdr = net_buf_push(buf, sizeof(*hdr));
     hdr->len = sys_cpu_to_le16(buf->len - sizeof(*hdr));
