@@ -212,7 +212,7 @@ static void board_pin_mux_init(void)
             uint8_t uart_sig = gpio_cfg.gpioPin % 8;
             /*link to one uart sig*/
             GLB_UART_Fun_Sel((GLB_UART_SIG_Type)uart_sig, (GLB_UART_SIG_FUN_Type)uart_func);
-            GLB_UART_Fun_Sel((GLB_UART_SIG_Type)uart_func, (GLB_UART_SIG_FUN_Type)uart_sig);
+            // GLB_UART_Fun_Sel((GLB_UART_SIG_Type)uart_func, (GLB_UART_SIG_FUN_Type)uart_sig);
         } else if (af_pin_table[i].func == GPIO_FUN_PWM) {
             /*if pwm func*/
             gpio_cfg.pullType = GPIO_PULL_DOWN;

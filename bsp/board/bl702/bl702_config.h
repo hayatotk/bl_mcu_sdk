@@ -52,6 +52,10 @@
 #include "bl702_debugger/peripheral_config.h"
 #include "bl702_debugger/clock_config.h"
 #include "bl702_debugger/pinmux_config.h"
+#elif defined(bl702_debugger_dualuart)
+#include "bl702_debugger_dualuart/peripheral_config.h"
+#include "bl702_debugger_dualuart/clock_config.h"
+#include "bl702_debugger_dualuart/pinmux_config.h"
 #else
 #error "do not find board,please check your board name"
 #endif
