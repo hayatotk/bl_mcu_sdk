@@ -56,6 +56,10 @@
 #include "bl702_debugger_dualuart/peripheral_config.h"
 #include "bl702_debugger_dualuart/clock_config.h"
 #include "bl702_debugger_dualuart/pinmux_config.h"
+#elif defined(bl702_debugger_dragonflytof)
+#include "bl702_debugger_dragonflytof/peripheral_config.h"
+#include "bl702_debugger_dragonflytof/clock_config.h"
+#include "bl702_debugger_dragonflytof/pinmux_config.h"
 #else
 #error "do not find board,please check your board name"
 #endif
