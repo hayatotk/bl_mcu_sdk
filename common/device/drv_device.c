@@ -106,8 +106,9 @@ struct device *device_find(const char *name)
 {
     struct device *dev;
     dlist_t *node;
+    dlist_t *next;
 
-    dlist_for_each(node, &device_head)
+    dlist_for_each_safe(node, next, &device_head)
     {
         dev = dlist_entry(node, struct device, list);
 

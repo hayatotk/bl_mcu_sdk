@@ -92,12 +92,6 @@ function(generate_bin)
 
     # Add common options
     add_compile_options(${GLOBAL_C_FLAGS})
-    add_compile_options(-D${BOARD})
-    add_compile_options($<$<COMPILE_LANGUAGE:C>:-std=c99>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-nostdlib>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
 
     # add basic library which is built by add_library
     check_add_library(common ${CMAKE_SOURCE_DIR}/common)
@@ -172,8 +166,22 @@ function(generate_bin)
     endif()
 
     list(APPEND SRCS ${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/bflb_platform.c)
+    list(APPEND SRCS ${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/vsnprintf.c)
     list(APPEND SRCS ${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/syscalls.c)
     list(APPEND SRCS ${CMAKE_SOURCE_DIR}/bsp/board/${CHIP}/board.c)
+
+    if(CONFIG_BL_SHOW_INFO AND CONFIG_BL_FLASH_INIT)
+        set_source_files_properties(${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/bflb_platform.c PROPERTIES COMPILE_FLAGS "-DCONFIG_BL_SHOW_INFO -DCONFIG_BL_FLASH_INIT")
+    elseif(CONFIG_BL_SHOW_INFO)
+        set_source_files_properties(${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/bflb_platform.c PROPERTIES COMPILE_FLAGS "-DCONFIG_BL_SHOW_INFO")
+    elseif(CONFIG_BL_FLASH_INIT)
+        set_source_files_properties(${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/bflb_platform.c PROPERTIES COMPILE_FLAGS "-DCONFIG_BL_FLASH_INIT")
+    else()
+
+    endif()
+    if(CONFIG_MEM_USE_FREERTOS)
+        set_source_files_properties(${CMAKE_SOURCE_DIR}/bsp/bsp_common/platform/syscalls.c PROPERTIES COMPILE_FLAGS -DCONFIG_MEM_USE_FREERTOS)
+    endif()
 
     add_executable(${target_name}.elf ${mainfile} ${SRCS})
     target_link_options(${target_name}.elf PRIVATE ${GLOBAL_LD_FLAGS})
@@ -263,27 +271,27 @@ function(check_add_library target_name directory) # if library do not be built, 
 endfunction()
 
 function(save_information)
-
-execute_process(
-    COMMAND git submodule status
-    OUTPUT_VARIABLE GIT_SUBMODULE_INFO
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
     execute_process(
-    COMMAND git log -1 --pretty=oneline
-    OUTPUT_VARIABLE SDK_INFO
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+        COMMAND git submodule status
+        OUTPUT_VARIABLE GIT_SUBMODULE_INFO
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    execute_process(
-    COMMAND ${TOOLCHAIN_PREFIX}gcc --version
-    OUTPUT_VARIABLE GCC_INFO
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(
+        COMMAND git log -1 --pretty=oneline
+        OUTPUT_VARIABLE SDK_INFO
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "*************submodule information*********************\r\n")
-    file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${GIT_SUBMODULE_INFO})
-    file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "\r\n*****************sdk information************************\r\n")
-    file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${SDK_INFO})
-    file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "\r\n*****************gcc information************************\r\n")
-    file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${GCC_INFO})
+        execute_process(
+        COMMAND ${TOOLCHAIN_PREFIX}gcc --version
+        OUTPUT_VARIABLE GCC_INFO
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+        file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "*************submodule information*********************\r\n")
+        file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${GIT_SUBMODULE_INFO})
+        file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "\r\n*****************sdk information************************\r\n")
+        file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${SDK_INFO})
+        file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt "\r\n*****************gcc information************************\r\n")
+        file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/submodule_commit_info.txt ${GCC_INFO})
+endif()
 endfunction(save_information)

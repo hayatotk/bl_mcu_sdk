@@ -445,7 +445,6 @@ void ES8388_Reg_Dump(void)
 
         bflb_platform_printf("Reg[%02d]=0x%02x \n", i, tmp);
     }
-
 }
 
 /*@} end of group ES8388_Private_Functions */

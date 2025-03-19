@@ -22,28 +22,32 @@
  */
 
 #include "diskio.h"
-#include "bsp_spi_sd.h"
+#include "bsp_spi_sdcard.h"
 #include "string.h"
 
 extern const char *FR_Table[];
 
-int sd_disk_status(void)
+static int sd_disk_status(void)
 {
     return 0;
 }
-int sd_disk_initialize(void)
+
+static int sd_disk_initialize(void)
 {
     return SD_Init(&SD_CardInfo);
 }
-int sd_disk_read(BYTE *buff, LBA_t sector, UINT count)
+
+static int sd_disk_read(BYTE *buff, LBA_t sector, UINT count)
 {
     return SD_ReadBlock(sector, buff, count);
 }
-int sd_disk_write(const BYTE *buff, LBA_t sector, UINT count)
+
+static int sd_disk_write(const BYTE *buff, LBA_t sector, UINT count)
 {
     return SD_WriteBlock(sector, (BYTE *)buff, count);
 }
-int sd_disk_ioctl(BYTE cmd, void *buff)
+
+static int sd_disk_ioctl(BYTE cmd, void *buff)
 {
     int result = 0;
 
@@ -75,13 +79,19 @@ int sd_disk_ioctl(BYTE cmd, void *buff)
     return result;
 }
 
-DSTATUS Translate_Result_Code(int result)
+static DSTATUS Translate_Result_Code(int result)
 {
-    // MSG("%s\r\n",FR_Table[result]);
+#if 0
+    if (result < 19) {
+        SD_SPI_MSG("%s\r\n", FR_Table[result]);
+    } else {
+        SD_SPI_MSG("FR_ERR:%d, unkown error\r\n", result);
+    }
+#endif
     return result;
 }
 
-void fatfs_sd_driver_register(void)
+void fatfs_sd_spi_driver_register(void)
 {
     FATFS_DiskioDriverTypeDef sdDiskioDriver;
 

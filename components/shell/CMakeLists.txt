@@ -32,7 +32,7 @@ list(APPEND ADD_SRCS  ${sources})
 
 ############ Add global compile option ################
 #add components denpend on this component
-list(APPEND ADD_DEFINITIONS -DSUPPORT_SHELL)
+list(APPEND ADD_DEFINITIONS -DCONFIG_SHELL_ENABLE)
 #######################################################
 
 ############ Add private compile option ################

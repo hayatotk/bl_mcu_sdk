@@ -327,7 +327,7 @@ Board: bl70x_iot
   <Dependencies Name="OpenOCD_Debug"/>
   <DebugSessions>
     <watchExpressions/>
-    <memoryExpressions>0x23000000;;;</memoryExpressions>
+    <memoryExpressions>;;;</memoryExpressions>
     <statistics>;;MHZ;</statistics>
     <peripheralTabs>
       <Tab disFormat="Hex">glb</Tab>
@@ -340,7 +340,7 @@ Board: bl70x_iot
   </DebugSessions>
   <DebugSessions>
     <watchExpressions/>
-    <memoryExpressions>;;;</memoryExpressions>
+    <memoryExpressions>0x23000000;;;</memoryExpressions>
     <statistics>;;MHZ;</statistics>
     <peripheralTabs>
       <Tab disFormat="Hex">glb</Tab>
@@ -461,6 +461,7 @@ Board: bl70x_iot
         <AllWarn>yes</AllWarn>
         <WarnErr>no</WarnErr>
         <OneElfS>yes</OneElfS>
+        <OneElfSPerData>no</OneElfSPerData>
         <Fstrict>no</Fstrict>
       </Compiler>
       <Asm>
@@ -491,6 +492,7 @@ Board: bl70x_iot
         <ResetType>Hard Reset</ResetType>
         <SoftResetVal>23000000</SoftResetVal>
         <ResetAfterLoad>no</ResetAfterLoad>
+        <AfterResetFile/>
         <Dumpcore>no</Dumpcore>
         <DumpcoreText>$(ProjectPath)/$(ProjectName).cdkcore</DumpcoreText>
         <ConfigICE>
@@ -527,6 +529,7 @@ Board: bl70x_iot
           <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
           <OpenOCDTclPort>6666</OpenOCDTclPort>
           <OpenOCDConfigOptions>-f ../../../../tools/openocd/if_rv_dbg_plus.cfg -f ../../../../tools/openocd/tgt_702.cfg</OpenOCDConfigOptions>
+          <OpenOCDTimeout>5000</OpenOCDTimeout>
         </ConfigOpenOCD>
       </Debug>
       <Flash>
@@ -652,6 +655,7 @@ Board: bl70x_iot
         <AllWarn>yes</AllWarn>
         <WarnErr>no</WarnErr>
         <OneElfS>yes</OneElfS>
+        <OneElfSPerData>no</OneElfSPerData>
         <Fstrict>no</Fstrict>
       </Compiler>
       <Asm>
@@ -682,6 +686,7 @@ Board: bl70x_iot
         <ResetType>Hard Reset</ResetType>
         <SoftResetVal>23000000</SoftResetVal>
         <ResetAfterLoad>no</ResetAfterLoad>
+        <AfterResetFile/>
         <Dumpcore>no</Dumpcore>
         <DumpcoreText>$(ProjectPath)/$(ProjectName).cdkcore</DumpcoreText>
         <ConfigICE>
@@ -718,6 +723,7 @@ Board: bl70x_iot
           <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
           <OpenOCDTclPort>6666</OpenOCDTclPort>
           <OpenOCDConfigOptions>-f ../../../../tools/openocd/if_rv_dbg_plus.cfg -f ../../../../tools/openocd/tgt_702.cfg</OpenOCDConfigOptions>
+          <OpenOCDTimeout>5000</OpenOCDTimeout>
         </ConfigOpenOCD>
       </Debug>
       <Flash>

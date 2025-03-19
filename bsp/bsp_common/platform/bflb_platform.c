@@ -52,6 +52,17 @@ __WEAK__ enum uart_index_type board_get_debug_uart_index(void)
     return 0;
 }
 
+#ifdef CONFIG_SHELL_ENABLE
+#include "shell.h"
+static void shell_irq_callback(struct device *dev, void *args, uint32_t size, uint32_t state)
+{
+    uint8_t data;
+    for (size_t i = 0; i < size; i++) {
+        data = *(uint8_t *)(args + i);
+        shell_handler(data);
+    }
+}
+#endif
 void bl_show_flashinfo(void)
 {
     SPI_Flash_Cfg_Type flashCfg;
@@ -79,14 +90,60 @@ void bl_show_flashinfo(void)
     MSG("-------------------\r\n");
 }
 
+#ifdef CONFIG_SHELL_ENABLE
+int reboot(int argc, char **argv)
+{
+    hal_reboot_cfg_t rbot;
+
+    /* check args */
+    if (argc > 2) {
+        MSG("too many parameters\r\n");
+        return 0;
+    }
+
+    if (2 == argc) {
+        /* get parm */
+        rbot = (hal_reboot_cfg_t)strtoll(argv[1], NULL, 0);
+
+        if (rbot < HAL_REBOOT_MAX) {
+            /* config reboot */
+            switch (rbot) {
+                case 0:
+                    MSG("reboot from media, normal run\r\n");
+                    rbot = HAL_REBOOT_FROM_MEDIA;
+                    break;
+                case 1:
+                    MSG("reboot from interface for download\r\n");
+                    rbot = HAL_REBOOT_FROM_INTERFACE;
+                    break;
+                default:
+                    MSG("reboot parameters only support None/0/1\r\n");
+                    return 0;
+            }
+            arch_delay_us(100);
+            hal_reboot_config(rbot);
+        }
+    } else {
+        MSG("reboot\r\n");
+        arch_delay_us(100);
+    }
+
+    hal_por_reset();
+    return 0;
+}
+SHELL_CMD_EXPORT(reboot, reboot system)
+#endif
+
 void bflb_platform_init(uint32_t baudrate)
 {
     static uint8_t initialized = 0;
-    BL_Err_Type ret = ERROR;
 
     cpu_global_irq_disable();
 
+#ifdef CONFIG_BL_FLASH_INIT
+    BL_Err_Type ret = ERROR;
     ret = flash_init();
+#endif
 
     board_init();
 
@@ -96,11 +153,14 @@ void bflb_platform_init(uint32_t baudrate)
 
         if (uart) {
             device_open(uart, DEVICE_OFLAG_STREAM_TX | DEVICE_OFLAG_INT_RX);
-            device_set_callback(uart, NULL);
-            device_control(uart, DEVICE_CTRL_CLR_INT, (void *)(UART_RX_FIFO_IT));
+#ifdef CONFIG_SHELL_ENABLE
+            device_set_callback(uart, shell_irq_callback);
+            device_control(uart, DEVICE_CTRL_SET_INT, (void *)(UART_RX_FIFO_IT | UART_RTO_IT));
+#endif
         }
-
+#ifdef CONFIG_BL_SHOW_INFO
         bl_show_info();
+#endif
     }
 
     if (!initialized) {
@@ -113,10 +173,15 @@ void bflb_platform_init(uint32_t baudrate)
 
         MSG("dynamic memory init success,heap size = %d Kbyte \r\n", system_mmheap[0].mem_size / 1024);
         initialized = 1;
+#ifdef CONFIG_BL_FLASH_INIT
         if (ret != SUCCESS) {
             MSG("flash init fail!!!\r\n");
         }
         bl_show_flashinfo();
+#endif
+#ifdef CONFIG_SHELL_ENABLE
+        shell_init();
+#endif
     }
 
     cpu_global_irq_enable();
@@ -135,7 +200,8 @@ uint32_t bflb_platform_get_log(uint8_t *data, uint32_t maxlen)
     return len;
 }
 #endif
-
+int puts(const char *fmt) __attribute__((alias("bflb_platform_printf")));
+int printf(const char *fmt, ...) __attribute__((alias("bflb_platform_printf")));
 void bflb_platform_printf(char *fmt, ...)
 {
     struct device *uart;
@@ -155,6 +221,7 @@ void bflb_platform_printf(char *fmt, ...)
 #endif
         uart = device_find("debug_log");
         device_write(uart, 0, (uint8_t *)print_buf, strlen(print_buf));
+        // UART_SendData(3, (uint8_t *)print_buf, strlen(print_buf));
     }
 }
 
@@ -198,7 +265,7 @@ void bflb_platform_dump(uint8_t *data, uint32_t len)
 
 void bflb_platform_reg_dump(uint32_t addr)
 {
-    bflb_platform_printf("%08x[31:0]=%08x\r\n", addr, *(volatile uint32_t *)(addr));
+    bflb_platform_printf("%08x[31:0]=%08x\r\n", addr, *(volatile uint32_t *)(uintptr_t)(addr));
 }
 
 void bflb_platform_init_time()
