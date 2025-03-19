@@ -37,12 +37,12 @@
 static sd_card_t gSDCardInfo;
 extern const char *FR_Table[];
 
-int MMC_disk_status()
+static int MMC_disk_status()
 {
     return 0;
 }
 
-int MMC_disk_initialize()
+static int MMC_disk_initialize()
 {
     static uint8_t inited = 0;
 
@@ -58,7 +58,7 @@ int MMC_disk_initialize()
     return 0;
 }
 
-int MMC_disk_read(BYTE *buff, LBA_t sector, UINT count)
+static int MMC_disk_read(BYTE *buff, LBA_t sector, UINT count)
 {
     if (SD_OK == SDH_ReadMultiBlocks(buff, sector, gSDCardInfo.blockSize, count)) {
         return 0;
@@ -67,7 +67,7 @@ int MMC_disk_read(BYTE *buff, LBA_t sector, UINT count)
     }
 }
 
-int MMC_disk_write(const BYTE *buff, LBA_t sector, UINT count)
+static int MMC_disk_write(const BYTE *buff, LBA_t sector, UINT count)
 {
     if (SD_OK == SDH_WriteMultiBlocks((uint8_t *)buff, sector, gSDCardInfo.blockSize, count)) {
         return 0;
@@ -76,7 +76,7 @@ int MMC_disk_write(const BYTE *buff, LBA_t sector, UINT count)
     }
 }
 
-int MMC_disk_ioctl(BYTE cmd, void *buff)
+static int MMC_disk_ioctl(BYTE cmd, void *buff)
 {
     switch (cmd) {
         // Get R/W sector size (WORD)
@@ -103,17 +103,7 @@ int MMC_disk_ioctl(BYTE cmd, void *buff)
     return 0;
 }
 
-DWORD get_fattime(void)
-{
-    return ((DWORD)(2015 - 1980) << 25) /* Year 2015 */
-           | ((DWORD)1 << 21)           /* Month 1 */
-           | ((DWORD)1 << 16)           /* Mday 1 */
-           | ((DWORD)0 << 11)           /* Hour 0 */
-           | ((DWORD)0 << 5)            /* Min 0 */
-           | ((DWORD)0 >> 1);           /* Sec 0 */
-}
-
-DSTATUS Translate_Result_Code(int result)
+static DSTATUS Translate_Result_Code(int result)
 {
     // MSG("%s\r\n",FR_Table[result]);
     return result;

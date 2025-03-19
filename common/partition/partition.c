@@ -323,7 +323,7 @@ pt_table_error_type pt_table_update_entry(pt_table_id_type target_table_id,
     ret = gp_pt_table_flash_erase(write_addr, sizeof(pt_table_config) + entries_len + 4);
 
     if (ret != SUCCESS) {
-        MSG_ERR("Flash Erase error\r\n");
+        //MSG_ERR("Flash Erase error\r\n");
         return PT_ERROR_FALSH_WRITE;
     }
 
@@ -331,7 +331,7 @@ pt_table_error_type pt_table_update_entry(pt_table_id_type target_table_id,
     ret = gp_pt_table_flash_write(write_addr, (uint8_t *)pt_stuff, sizeof(pt_table_stuff_config));
 
     if (ret != SUCCESS) {
-        MSG_ERR("Flash Write error\r\n");
+        //MSG_ERR("Flash Write error\r\n");
         return PT_ERROR_FALSH_WRITE;
     }
 
@@ -373,14 +373,14 @@ pt_table_error_type pt_table_create(pt_table_id_type pt_id)
     ret = gp_pt_table_flash_erase(write_addr,sizeof(pt_table_config));
 
     if (ret != SUCCESS) {
-        MSG_ERR("Flash Erase error\r\n");
+        //MSG_ERR("Flash Erase error\r\n");
         return PT_ERROR_FALSH_ERASE;
     }
 
     ret = gp_pt_table_flash_write(write_addr, (uint8_t *)&pt_table, sizeof(pt_table_config));
 
     if (ret != SUCCESS) {
-        MSG_ERR("Flash Write error\r\n");
+        //MSG_ERR("Flash Write error\r\n");
         return PT_ERROR_FALSH_WRITE;
     }
 
@@ -506,14 +506,14 @@ pt_table_error_type pt_table_set_iap_para(pt_table_iap_param_type *para)
         ret = gp_pt_table_flash_erase(BFLB_PT_TABLE1_ADDRESS, sizeof(pt_table_stuff_config));
 
         if (ret != SUCCESS) {
-            MSG_ERR("Flash Erase error\r\n");
+            //MSG_ERR("Flash Erase error\r\n");
             return PT_ERROR_FALSH_ERASE;
         }
 
         ret = gp_pt_table_flash_write(BFLB_PT_TABLE1_ADDRESS, (uint8_t *)&pt_stuff_write, sizeof(pt_table_stuff_config));
 
         if (ret != SUCCESS) {
-            MSG_ERR("Flash Write error\r\n");
+            //MSG_ERR("Flash Write error\r\n");
             return PT_ERROR_FALSH_WRITE;
         }
     } else if (para->inactive_table_index == 0) {
@@ -521,14 +521,14 @@ pt_table_error_type pt_table_set_iap_para(pt_table_iap_param_type *para)
         ret = gp_pt_table_flash_erase(BFLB_PT_TABLE0_ADDRESS, sizeof(pt_table_stuff_config));
 
         if (ret != SUCCESS) {
-            MSG_ERR("Flash Erase error\r\n");
+            //MSG_ERR("Flash Erase error\r\n");
             return PT_ERROR_FALSH_ERASE;
         }
 
         ret = gp_pt_table_flash_write(BFLB_PT_TABLE0_ADDRESS, (uint8_t *)&pt_stuff_write, sizeof(pt_table_stuff_config));
 
         if (ret != SUCCESS) {
-            MSG_ERR("Flash Write error\r\n");
+            //MSG_ERR("Flash Write error\r\n");
             return PT_ERROR_FALSH_WRITE;
         }
     }

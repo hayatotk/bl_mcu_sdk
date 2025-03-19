@@ -27,6 +27,6 @@ void *simple_malloc(uint32_t size)
 
 void simple_free(void *p)
 {
-    MSG_DBG("Simple Free %08x\r\n", p);
+    //MSG_DBG("Simple Free %08x\r\n", p);
     return;
 }

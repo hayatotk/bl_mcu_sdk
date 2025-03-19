@@ -124,6 +124,7 @@ void mmheap_get_state(struct heap_info *pRoot, struct heap_state *pState)
  * @param want_size
  * @return void*
  */
+// extern uintptr_t memory_size;
 void *mmheap_align_alloc(struct heap_info *pRoot, size_t align_size, size_t want_size)
 {
     void *pReturn = NULL;
@@ -205,6 +206,7 @@ void *mmheap_align_alloc(struct heap_info *pRoot, size_t align_size, size_t want
     }
     pNow_Node->mem_size |= MEM_MANAGE_ALLOCA_LABAL;
     MMHEAP_UNLOCK();
+    // memory_size = pNow_Node->mem_size;
     return pReturn;
 }
 /**
@@ -328,6 +330,7 @@ void *mmheap_calloc(struct heap_info *pRoot, size_t num, size_t size)
  * @param pRoot
  * @param addr
  */
+// extern uintptr_t free_size;
 void mmheap_free(struct heap_info *pRoot, void *addr)
 {
     struct heap_node *pFree_Node;
@@ -352,6 +355,7 @@ void mmheap_free(struct heap_info *pRoot, void *addr)
         return;
     }
     pFree_Node->mem_size &= ~MEM_MANAGE_ALLOCA_LABAL;
+    // free_size = pFree_Node->mem_size;
     mmheap_insert_node_to_freelist(pRoot, pFree_Node);
     MMHEAP_UNLOCK();
 }

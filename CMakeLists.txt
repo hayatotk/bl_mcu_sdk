@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
+if (${CMAKE_VERSION} VERSION_LESS 3.15)
+    message(FATAL_ERROR "cmake version is less than 3.15")
+endif()
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/tools/cmake/riscv64-unknown-elf-gcc.cmake)
 include(${CMAKE_SOURCE_DIR}/drivers/${CHIP}_driver/cpu_flags.cmake)
 include(${CMAKE_SOURCE_DIR}/tools/cmake/compiler_flags.cmake)

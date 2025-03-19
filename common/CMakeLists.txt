@@ -50,8 +50,7 @@ list(APPEND ADD_SRCS  ${sources})
 
 ############ Add global compile option ################
 #add components denpend on this component
-string(TOUPPER ${CHIP} CHIPNAME)
-list(APPEND ADD_DEFINITIONS -D${CHIPNAME})
+# list(APPEND ADD_DEFINITIONS -Dxxx)
 #######################################################
 
 ############ Add private compile option ################
